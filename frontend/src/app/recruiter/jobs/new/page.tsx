@@ -12,12 +12,12 @@ import {
 } from "@/lib/api";
 
 const inputClass =
-  "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#2fc16c]/30 focus:border-[#2fc16c] transition-colors bg-white resize-none";
+  "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#A0A3FF]/30 focus:border-[#A0A3FF] transition-colors bg-white resize-none";
 
 const CATEGORY_COLORS: Record<string, string> = {
   Technical: "text-blue-400",
-  Behavioral: "text-purple-400",
-  "Culture Fit": "text-[#2fc16c]",
+  Behavioral: "text-purple-300",
+  "Culture Fit": "text-[#2FC278]",
 };
 
 export default function NewJobPage() {
@@ -170,7 +170,7 @@ export default function NewJobPage() {
           <button
             onClick={() => handleSave(true)}
             disabled={saving}
-            className="bg-[#2fc16c] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#28a85d] disabled:opacity-50 transition-colors"
+            className="bg-[#A0A3FF] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#8C8FF0] disabled:opacity-50 transition-colors"
           >
             {saving ? "Publishing…" : "Publish"}
           </button>
@@ -264,10 +264,10 @@ export default function NewJobPage() {
 
         {/* Right: AI questions panel */}
         <aside className="lg:col-span-4">
-          <div className="bg-[#0d2818] rounded-2xl p-6 text-white sticky top-8">
+          <div className="bg-[#0F172A] rounded-2xl p-6 text-white sticky top-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="bg-[#2fc16c]/20 p-2 rounded-lg shrink-0">
-                <span className="material-symbols-outlined text-[#2fc16c]">auto_awesome</span>
+              <div className="bg-[#A0A3FF]/20 p-2 rounded-lg shrink-0">
+                <span className="material-symbols-outlined text-[#A0A3FF]">auto_awesome</span>
               </div>
               <div>
                 <h2 className="font-bold text-sm">AI Interview Questions</h2>
@@ -291,7 +291,7 @@ export default function NewJobPage() {
                 {editableQuestions.map((q, i) => (
                   <div
                     key={i}
-                    className="group bg-white/5 border border-white/10 hover:border-[#2fc16c]/40 rounded-xl p-3 transition-colors"
+                    className="group bg-white/5 border border-white/10 hover:border-[#A0A3FF]/40 rounded-xl p-3 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <span className={`text-[10px] font-bold uppercase tracking-widest ${CATEGORY_COLORS[q.category] ?? "text-slate-400"}`}>
@@ -322,12 +322,12 @@ export default function NewJobPage() {
                           onChange={(e) => setEditingText(e.target.value)}
                           rows={3}
                           autoFocus
-                          className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm resize-none focus:outline-none focus:border-[#2fc16c]/60"
+                          className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm resize-none focus:outline-none focus:border-[#A0A3FF]/60"
                         />
                         <div className="flex gap-2 mt-2">
                           <button
                             onClick={() => confirmEdit(i)}
-                            className="text-xs bg-[#2fc16c] text-white px-3 py-1 rounded-lg font-semibold hover:bg-[#28a85d] transition-colors"
+                            className="text-xs bg-[#A0A3FF] text-white px-3 py-1 rounded-lg font-semibold hover:bg-[#8C8FF0] transition-colors"
                           >
                             Save
                           </button>
@@ -352,7 +352,7 @@ export default function NewJobPage() {
             <button
               onClick={handleGenerate}
               disabled={generating}
-              className="w-full bg-[#2fc16c] text-white rounded-xl py-3 font-bold text-sm hover:bg-[#28a85d] disabled:opacity-60 transition-colors mb-3 flex items-center justify-center gap-2"
+              className="w-full bg-[#A0A3FF] text-white rounded-xl py-3 font-bold text-sm hover:bg-[#8C8FF0] disabled:opacity-60 transition-colors mb-3 flex items-center justify-center gap-2"
             >
               {generating ? (
                 <>

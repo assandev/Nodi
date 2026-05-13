@@ -6,10 +6,10 @@ import { getJob, getQuestions, JobOut, QuestionOut } from "@/lib/api";
 
 function StatusBadge({ status }: { status: JobOut["status"] }) {
   const config = {
-    draft:  { bg: "bg-gray-100",   text: "text-gray-600",   label: "Draft"  },
-    active: { bg: "bg-[#e6f4ec]",  text: "text-[#2fc16c]",  label: "Active" },
-    paused: { bg: "bg-yellow-100", text: "text-yellow-700", label: "Paused" },
-    closed: { bg: "bg-red-100",    text: "text-red-600",    label: "Closed" },
+    draft:  { bg: "bg-gray-100",         text: "text-gray-600",   label: "Draft"  },
+    active: { bg: "bg-[#2FC278]/15",      text: "text-[#2FC278]",  label: "Active" },
+    paused: { bg: "bg-yellow-100",        text: "text-yellow-700", label: "Paused" },
+    closed: { bg: "bg-red-100",           text: "text-red-600",    label: "Closed" },
   }[status];
   return (
     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${config.bg} ${config.text}`}>
@@ -21,7 +21,7 @@ function StatusBadge({ status }: { status: JobOut["status"] }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-      <h3 className="font-bold text-gray-900 mb-3 text-sm uppercase tracking-wider text-gray-500">{title}</h3>
+      <h3 className="font-bold mb-3 text-sm uppercase tracking-wider text-gray-500">{title}</h3>
       <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{children}</p>
     </div>
   );
@@ -44,7 +44,7 @@ export default function JobDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="size-8 border-2 border-[#2fc16c] border-t-transparent rounded-full animate-spin" />
+        <div className="size-8 border-2 border-[#A0A3FF] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -63,7 +63,7 @@ export default function JobDetailPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
-            <Link href="/recruiter/jobs" className="hover:text-[#2fc16c] transition-colors">
+            <Link href="/recruiter/jobs" className="hover:text-[#A0A3FF] transition-colors">
               Vacancies
             </Link>
             <span>/</span>
@@ -103,7 +103,7 @@ export default function JobDetailPage() {
 
         {/* Right: questions */}
         <div className="lg:col-span-1">
-          <div className="bg-[#0d2818] text-white rounded-xl p-6">
+          <div className="bg-[#0F172A] text-white rounded-xl p-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold text-sm">Interview Questions</h3>
               <span className="bg-white/10 text-slate-300 text-xs font-bold px-2 py-0.5 rounded-full">
@@ -117,7 +117,7 @@ export default function JobDetailPage() {
                 <p className="text-slate-500 text-sm">No questions yet.</p>
                 <Link
                   href={`/recruiter/jobs/${job.id}/edit`}
-                  className="text-[#2fc16c] text-xs font-semibold hover:underline mt-1 block"
+                  className="text-[#A0A3FF] text-xs font-semibold hover:underline mt-1 block"
                 >
                   Edit to add questions
                 </Link>
@@ -130,7 +130,7 @@ export default function JobDetailPage() {
                     className="bg-white/5 border border-white/10 rounded-xl p-3"
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[#2fc16c] text-xs font-bold">Q{q.position}</span>
+                      <span className="text-[#A0A3FF] text-xs font-bold">Q{q.position}</span>
                       <span className="text-slate-500 text-[10px]">{q.question_type}</span>
                     </div>
                     <p className="text-slate-200 text-sm leading-relaxed">{q.question_text}</p>

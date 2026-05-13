@@ -12,7 +12,7 @@ const STATUS_LABEL: Record<JobOut["status"], string> = {
 };
 
 const STATUS_COLOR: Record<JobOut["status"], string> = {
-  active: "text-[#2fc16c]",
+  active: "text-[#2FC278]",
   draft: "text-gray-400",
   paused: "text-yellow-500",
   closed: "text-red-400",
@@ -48,7 +48,7 @@ export default function DashboardPage() {
         </div>
         <button
           onClick={() => router.push("/recruiter/jobs/new")}
-          className="bg-[#2fc16c] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:bg-[#28a85d] transition-colors"
+          className="bg-[#A0A3FF] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:bg-[#8C8FF0] transition-colors"
         >
           Create New Vacancy
         </button>
@@ -59,7 +59,7 @@ export default function DashboardPage() {
         {stats.map((s) => (
           <div key={s.label} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <div className="flex justify-between items-start mb-4">
-              <div className="p-2 bg-[#2fc16c]/10 rounded-lg text-[#2fc16c]">
+              <div className="p-2 bg-[#A0A3FF]/10 rounded-lg text-[#A0A3FF]">
                 <span className="material-symbols-outlined">{s.icon}</span>
               </div>
             </div>
@@ -75,14 +75,14 @@ export default function DashboardPage() {
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
               <h3 className="font-bold text-gray-900">Vacancies</h3>
-              <Link href="/recruiter/jobs" className="text-[#2fc16c] text-sm font-semibold hover:underline">
+              <Link href="/recruiter/jobs" className="text-[#A0A3FF] text-sm font-semibold hover:underline">
                 View All
               </Link>
             </div>
 
             {loading ? (
               <div className="flex justify-center py-12">
-                <div className="size-6 border-2 border-[#2fc16c] border-t-transparent rounded-full animate-spin" />
+                <div className="size-6 border-2 border-[#A0A3FF] border-t-transparent rounded-full animate-spin" />
               </div>
             ) : jobs.length === 0 ? (
               <div className="p-12 text-center text-gray-400">
@@ -141,10 +141,10 @@ export default function DashboardPage() {
               <p className="text-sm">No activity yet.</p>
             </div>
 
-            <div className="mt-8 p-4 bg-[#e6f4ec] rounded-xl border border-dashed border-[#2fc16c]/30">
+            <div className="mt-8 p-4 bg-[#A0A3FF]/8 rounded-xl border border-dashed border-[#A0A3FF]/30">
               <div className="flex items-center gap-3">
                 <div className="size-8 bg-white rounded-lg shadow-sm flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-[#2fc16c] text-base">
+                  <span className="material-symbols-outlined text-[#A0A3FF] text-base">
                     tips_and_updates
                   </span>
                 </div>
