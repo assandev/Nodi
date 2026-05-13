@@ -120,7 +120,7 @@ class CandidateOut(BaseModel):
 # ── Interview Invitations ─────────────────────────────────────────────────────
 
 class InvitationCreate(BaseModel):
-    expires_at: datetime
+    expires_at: Optional[datetime] = None
 
 
 class InvitationOut(BaseModel):

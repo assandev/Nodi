@@ -175,3 +175,83 @@ export async function getMe(): Promise<MeResponse> {
   if (!res.ok) throw new Error("Unauthorized");
   return res.json();
 }
+
+export interface InvitationOut {
+  id: string;
+  job_id: string;
+  invited_by: string;
+  candidate_id: string | null;
+  status: string;
+  expires_at: string;
+  started_at: string | null;
+  submitted_at: string | null;
+  created_at: string;
+}
+
+export interface InvitationWithToken extends InvitationOut {
+  token: string;
+}
+
+export interface PublicInterviewData {
+  invitation: InvitationOut;
+  job: { id: string; role: string; company: string };
+  questions: QuestionOut[];
+}
+
+export interface CandidateOut {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  linkedin_url: string | null;
+  portfolio_url: string | null;
+  location: string | null;
+  years_experience: number | null;
+  created_at: string;
+}
+
+export async function createInvitation(jobId: string): Promise<InvitationWithToken> {
+  const res = await apiFetch(`/jobs/${jobId}/invitations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getInvitations(jobId: string): Promise<InvitationOut[]> {
+  const res = await apiFetch(`/jobs/${jobId}/invitations`);
+  if (!res.ok) throw new Error("Failed to load invitations");
+  return res.json();
+}
+
+export async function getPublicInterview(token: string): Promise<PublicInterviewData> {
+  const res = await fetch(`${BASE_URL}/public/interviews/${token}`);
+  if (res.status === 404) throw Object.assign(new Error("Not found"), { status: 404 });
+  if (res.status === 410) throw Object.assign(new Error("Already submitted"), { status: 410 });
+  if (!res.ok) throw Object.assign(new Error("Failed to load interview"), { status: res.status });
+  return res.json();
+}
+
+export async function submitCandidateInfo(
+  token: string,
+  data: {
+    full_name: string;
+    email: string;
+    phone: string;
+    linkedin_url?: string;
+    portfolio_url?: string;
+    location?: string;
+    years_experience?: number;
+  }
+): Promise<CandidateOut> {
+  const res = await fetch(`${BASE_URL}/public/interviews/${token}/candidate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (res.status === 409) throw Object.assign(new Error("Already submitted"), { status: 409 });
+  if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status });
+  return res.json();
+}

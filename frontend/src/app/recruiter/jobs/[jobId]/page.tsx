@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getJob, getQuestions, JobOut, QuestionOut } from "@/lib/api";
+import { getJob, getQuestions, createInvitation, JobOut, QuestionOut } from "@/lib/api";
 
 function StatusBadge({ status }: { status: JobOut["status"] }) {
   const config = {
@@ -33,6 +33,9 @@ export default function JobDetailPage() {
   const [questions, setQuestions] = useState<QuestionOut[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [creatingLink, setCreatingLink] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     Promise.all([getJob(params.jobId), getQuestions(params.jobId)])
@@ -40,6 +43,26 @@ export default function JobDetailPage() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [params.jobId]);
+
+  async function handleGenerateInvite() {
+    if (!job) return;
+    setCreatingLink(true);
+    try {
+      const inv = await createInvitation(job.id);
+      setInviteLink(`${window.location.origin}/interview/${inv.token}`);
+    } catch {
+      // silent — could show a toast here
+    } finally {
+      setCreatingLink(false);
+    }
+  }
+
+  async function handleCopy() {
+    if (!inviteLink) return;
+    await navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   if (loading) {
     return (
@@ -83,14 +106,54 @@ export default function JobDetailPage() {
             Edit
           </Link>
           <button
-            disabled
-            title="Coming in Phase 4"
-            className="bg-gray-100 text-gray-400 px-5 py-2.5 rounded-xl font-bold text-sm cursor-not-allowed"
+            onClick={handleGenerateInvite}
+            disabled={creatingLink}
+            className="bg-[#A0A3FF] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#8C8FF0] disabled:opacity-60 transition-colors flex items-center gap-2"
           >
-            Generate Invite Link
+            {creatingLink ? (
+              <>
+                <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Generating…
+              </>
+            ) : (
+              "Generate Invite Link"
+            )}
           </button>
         </div>
       </div>
+
+      {inviteLink && (
+        <div className="bg-[#0F172A] text-white rounded-xl p-4 mb-6 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[#A0A3FF] text-base">link</span>
+              <span className="text-sm font-semibold">Candidate Interview Link</span>
+            </div>
+            <button
+              onClick={() => setInviteLink(null)}
+              className="text-[#8899BB] hover:text-white transition-colors"
+              title="Close"
+            >
+              <span className="material-symbols-outlined text-base">close</span>
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <input
+              readOnly
+              value={inviteLink}
+              className="flex-1 bg-[#1E2744] border border-[#2A3A5E] rounded-xl px-4 py-2.5 text-sm text-[#8899BB] focus:outline-none select-all"
+              onFocus={(e) => e.target.select()}
+            />
+            <button
+              onClick={handleCopy}
+              className="bg-[#A0A3FF] text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-[#8C8FF0] transition-colors shrink-0"
+            >
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+          <p className="text-[#8899BB] text-xs">Share this link with the candidate. It expires in 7 days.</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left: job details */}
