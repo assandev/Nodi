@@ -1,28 +1,44 @@
-const stats = [
-  { label: "Active Vacancies", value: "0", change: "", icon: "assignment", changeColor: "" },
-  { label: "Invitations Sent", value: "0", change: "", icon: "send", changeColor: "" },
-  { label: "Completed Interviews", value: "0", change: "", icon: "check_circle", changeColor: "" },
-  { label: "AI Recommended", value: "0", change: "", icon: "psychology", changeColor: "" },
-];
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { getJobs, JobOut } from "@/lib/api";
 
-const vacancies: {
-  role: string;
-  candidates: number;
-  status: string;
-  statusColor: string;
-  lastActivity: string;
-}[] = [];
+const STATUS_LABEL: Record<JobOut["status"], string> = {
+  active: "Active",
+  draft: "Draft",
+  paused: "Paused",
+  closed: "Closed",
+};
 
-const activity: {
-  icon: string;
-  iconBg: string;
-  iconColor: string;
-  title: string;
-  description: string;
-  time: string;
-}[] = [];
+const STATUS_COLOR: Record<JobOut["status"], string> = {
+  active: "text-[#2fc16c]",
+  draft: "text-gray-400",
+  paused: "text-yellow-500",
+  closed: "text-red-400",
+};
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [jobs, setJobs] = useState<JobOut[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getJobs()
+      .then(setJobs)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const activeCount = jobs.filter((j) => j.status === "active").length;
+
+  const stats = [
+    { label: "Active Vacancies", value: loading ? "…" : String(activeCount), icon: "assignment" },
+    { label: "Invitations Sent", value: "0", icon: "send" },
+    { label: "Completed Interviews", value: "0", icon: "check_circle" },
+    { label: "AI Recommended", value: "0", icon: "psychology" },
+  ];
+
   return (
     <div>
       <div className="mb-8 flex justify-between items-center">
@@ -30,7 +46,10 @@ export default function DashboardPage() {
           <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Hiring Overview</h2>
           <p className="text-gray-500 mt-1">{"Here's what's happening with your pipeline today."}</p>
         </div>
-        <button className="bg-[#ec5b13] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:bg-[#d4500f] transition-colors">
+        <button
+          onClick={() => router.push("/recruiter/jobs/new")}
+          className="bg-[#2fc16c] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:bg-[#28a85d] transition-colors"
+        >
           Create New Vacancy
         </button>
       </div>
@@ -40,14 +59,9 @@ export default function DashboardPage() {
         {stats.map((s) => (
           <div key={s.label} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <div className="flex justify-between items-start mb-4">
-              <div className="p-2 bg-[#ec5b13]/10 rounded-lg text-[#ec5b13]">
+              <div className="p-2 bg-[#2fc16c]/10 rounded-lg text-[#2fc16c]">
                 <span className="material-symbols-outlined">{s.icon}</span>
               </div>
-              {s.change && (
-                <span className={`text-xs font-bold px-2 py-1 rounded ${s.changeColor}`}>
-                  {s.change}
-                </span>
-              )}
             </div>
             <p className="text-gray-500 text-sm font-medium">{s.label}</p>
             <h3 className="text-2xl font-bold text-gray-900 mt-1">{s.value}</h3>
@@ -60,17 +74,22 @@ export default function DashboardPage() {
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h3 className="font-bold text-gray-900">Active Vacancies</h3>
-              <button className="text-[#ec5b13] text-sm font-semibold hover:underline">
+              <h3 className="font-bold text-gray-900">Vacancies</h3>
+              <Link href="/recruiter/jobs" className="text-[#2fc16c] text-sm font-semibold hover:underline">
                 View All
-              </button>
+              </Link>
             </div>
-            {vacancies.length === 0 ? (
+
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <div className="size-6 border-2 border-[#2fc16c] border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : jobs.length === 0 ? (
               <div className="p-12 text-center text-gray-400">
                 <span className="material-symbols-outlined text-4xl mb-3 block text-gray-300">
                   work_outline
                 </span>
-                <p className="text-sm">No active vacancies yet.</p>
+                <p className="text-sm">No vacancies yet.</p>
                 <p className="text-xs mt-1">Create your first vacancy to get started.</p>
               </div>
             ) : (
@@ -78,38 +97,30 @@ export default function DashboardPage() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-gray-50">
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Role Name
-                      </th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
-                        Candidates
-                      </th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Pipeline Status
-                      </th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Last Activity
-                      </th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Role</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Company</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Created</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {vacancies.map((v) => (
-                      <tr key={v.role} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-5 font-medium text-gray-900">{v.role}</td>
-                        <td className="px-6 py-5 text-center">
-                          <span className="bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded-full text-sm font-semibold">
-                            {v.candidates}
+                    {jobs.map((job) => (
+                      <tr
+                        key={job.id}
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => router.push(`/recruiter/jobs/${job.id}`)}
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900">{job.role}</td>
+                        <td className="px-6 py-4 text-gray-500">{job.company}</td>
+                        <td className="px-6 py-4">
+                          <span className={`flex items-center gap-1.5 font-semibold text-sm ${STATUS_COLOR[job.status]}`}>
+                            <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                            {STATUS_LABEL[job.status]}
                           </span>
                         </td>
-                        <td className="px-6 py-5">
-                          <span
-                            className={`flex items-center gap-2 font-semibold text-sm ${v.statusColor}`}
-                          >
-                            <span className={`w-2 h-2 rounded-full bg-current`} />
-                            {v.status}
-                          </span>
+                        <td className="px-6 py-4 text-gray-400 text-sm">
+                          {new Date(job.created_at).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-5 text-gray-500 text-sm">{v.lastActivity}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -123,38 +134,17 @@ export default function DashboardPage() {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 h-full">
             <h3 className="font-bold text-gray-900 mb-6">Recent Activity</h3>
-            {activity.length === 0 ? (
-              <div className="text-center text-gray-400 py-8">
-                <span className="material-symbols-outlined text-3xl mb-2 block text-gray-300">
-                  history
-                </span>
-                <p className="text-sm">No activity yet.</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {activity.map((a, i) => (
-                  <div key={i} className="flex gap-4">
-                    <div
-                      className={`size-10 rounded-full ${a.iconBg} flex items-center justify-center ${a.iconColor} shrink-0`}
-                    >
-                      <span className="material-symbols-outlined text-xl">{a.icon}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">{a.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">{a.description}</p>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase mt-2 block">
-                        {a.time}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="text-center text-gray-400 py-8">
+              <span className="material-symbols-outlined text-3xl mb-2 block text-gray-300">
+                history
+              </span>
+              <p className="text-sm">No activity yet.</p>
+            </div>
 
-            <div className="mt-8 p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+            <div className="mt-8 p-4 bg-[#e6f4ec] rounded-xl border border-dashed border-[#2fc16c]/30">
               <div className="flex items-center gap-3">
                 <div className="size-8 bg-white rounded-lg shadow-sm flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-gray-400 text-base">
+                  <span className="material-symbols-outlined text-[#2fc16c] text-base">
                     tips_and_updates
                   </span>
                 </div>

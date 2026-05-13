@@ -5,11 +5,11 @@ import Header from "@/components/Header";
 export default function RecruiterLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
-      <div className="flex h-screen overflow-hidden bg-[#240f1b]">
+      <div className="flex h-screen overflow-hidden bg-[#0d2818]">
         <Sidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
           <Header />
-          <main className="flex-1 overflow-y-auto bg-[#f8f6f6] p-8">{children}</main>
+          <main className="flex-1 overflow-y-auto bg-[#e6f4ec] p-8">{children}</main>
         </div>
       </div>
     </AuthGuard>
