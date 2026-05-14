@@ -5,7 +5,7 @@ import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.db.models import (
@@ -24,7 +24,8 @@ from app.db.schemas import (
     StartInterviewBody,
     StartInterviewResponse,
 )
-from app.db.session import get_db
+from app.core.transcription import TranscriptionError, transcribe_audio
+from app.db.session import SessionLocal, get_db
 
 router = APIRouter()
 
@@ -181,6 +182,31 @@ def get_interview_session(
     )
 
 
+def transcribe_response_bg(response_id: str, file_path: str) -> None:
+    response = None
+    db = SessionLocal()
+    try:
+        response = (
+            db.query(InterviewResponse)
+            .filter(InterviewResponse.id == response_id)
+            .first()
+        )
+        if response is None:
+            return
+        response.transcription_status = "processing"
+        db.commit()
+        result = transcribe_audio(file_path)
+        response.transcript = result
+        response.transcription_status = "completed"
+        db.commit()
+    except TranscriptionError:
+        if response is not None:
+            response.transcription_status = "failed"
+            db.commit()
+    finally:
+        db.close()
+
+
 @router.post(
     "/interview-sessions/{session_token}/responses",
     response_model=SessionResponseOut,
@@ -191,6 +217,7 @@ async def submit_response(
     question_id: str = Form(...),
     audio: UploadFile = ...,
     duration_seconds: int = Form(0),
+    background_tasks: BackgroundTasks = ...,
     db: Session = Depends(get_db),
 ) -> SessionResponseOut:
     session = _resolve_session(session_token, db)
@@ -245,6 +272,7 @@ async def submit_response(
 
     db.commit()
     db.refresh(response)
+    background_tasks.add_task(transcribe_response_bg, str(response.id), str(file_path))
     return response
 
 

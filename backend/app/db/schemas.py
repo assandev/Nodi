@@ -233,6 +233,48 @@ class SessionResponseOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# ── Recruiter Dashboard ───────────────────────────────────────────────────────
+
+class RecruiterStats(BaseModel):
+    active_jobs: int
+    total_sessions: int
+    submitted_sessions: int
+    in_progress_sessions: int
+
+
+class ResponseWithQuestion(BaseModel):
+    id: UUID
+    question_id: UUID
+    question_text: str
+    question_position: int
+    audio_duration_seconds: Optional[int]
+    transcript: Optional[str]
+    transcription_status: str
+    recorded_at: Optional[datetime]
+
+
+class SessionListItem(BaseModel):
+    id: UUID
+    status: str
+    submitted_at: Optional[datetime]
+    created_at: datetime
+    candidate_id: UUID
+    candidate_name: str
+    candidate_email: str
+    responses_count: int
+    transcribed_count: int
+
+
+class SessionDetail(BaseModel):
+    id: UUID
+    status: str
+    started_at: Optional[datetime]
+    submitted_at: Optional[datetime]
+    created_at: datetime
+    candidate: CandidateOut
+    responses: list[ResponseWithQuestion]
+
+
 # ── Auth ──────────────────────────────────────────────────────────────────────
 
 class LoginRequest(BaseModel):

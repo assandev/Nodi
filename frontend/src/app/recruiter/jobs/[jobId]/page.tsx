@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { getJob, getQuestions, JobOut, QuestionOut } from "@/lib/api";
+import { getJob, getJobInterviews, getQuestions, JobOut, QuestionOut, SessionListItem } from "@/lib/api";
 
 function StatusBadge({ status }: { status: JobOut["status"] }) {
   const config = {
@@ -27,17 +27,28 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+const SESSION_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  started:     { label: "Started",     color: "text-blue-500"   },
+  in_progress: { label: "In Progress", color: "text-yellow-500" },
+  submitted:   { label: "Submitted",   color: "text-[#2FC278]"  },
+  completed:   { label: "Completed",   color: "text-[#2FC278]"  },
+  failed:      { label: "Failed",      color: "text-red-400"    },
+  expired:     { label: "Expired",     color: "text-gray-400"   },
+};
+
 export default function JobDetailPage() {
   const params = useParams<{ jobId: string }>();
+  const router = useRouter();
   const [job, setJob] = useState<JobOut | null>(null);
   const [questions, setQuestions] = useState<QuestionOut[]>([]);
+  const [sessions, setSessions] = useState<SessionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedPublic, setCopiedPublic] = useState(false);
 
   useEffect(() => {
-    Promise.all([getJob(params.jobId), getQuestions(params.jobId)])
-      .then(([j, q]) => { setJob(j); setQuestions(q); })
+    Promise.all([getJob(params.jobId), getQuestions(params.jobId), getJobInterviews(params.jobId)])
+      .then(([j, q, s]) => { setJob(j); setQuestions(q); setSessions(s); })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [params.jobId]);
@@ -94,12 +105,76 @@ export default function JobDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left: job details */}
+        {/* Left: job details + candidates */}
         <div className="lg:col-span-2 space-y-4">
           <Section title="Job Description">{job.job_description}</Section>
           {job.responsibilities && <Section title="Responsibilities">{job.responsibilities}</Section>}
           {job.requirements && <Section title="Requirements">{job.requirements}</Section>}
           {job.culture_notes && <Section title="Culture Notes">{job.culture_notes}</Section>}
+
+          {/* Candidates */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-bold text-sm uppercase tracking-wider text-gray-500">Candidates</h3>
+              <span className="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full">
+                {sessions.length}
+              </span>
+            </div>
+            {sessions.length === 0 ? (
+              <div className="p-10 text-center text-gray-400">
+                <span className="material-symbols-outlined text-3xl mb-2 block text-gray-300">group</span>
+                <p className="text-sm">No candidates yet.</p>
+                <p className="text-xs mt-1">Share the public link to start receiving interviews.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Candidate</th>
+                      <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Answers</th>
+                      <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Submitted</th>
+                      <th className="px-6 py-3" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {sessions.map((s) => {
+                      const sc = SESSION_STATUS_CONFIG[s.status] ?? { label: s.status, color: "text-gray-500" };
+                      return (
+                        <tr key={s.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <p className="font-medium text-gray-900 text-sm">{s.candidate_name}</p>
+                            <p className="text-gray-400 text-xs">{s.candidate_email}</p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`flex items-center gap-1.5 text-sm font-semibold ${sc.color}`}>
+                              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                              {sc.label}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {s.transcribed_count}/{s.responses_count} transcribed
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-400">
+                            {s.submitted_at ? new Date(s.submitted_at).toLocaleDateString() : "—"}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button
+                              onClick={() => router.push(`/recruiter/jobs/${job.id}/candidates/${s.id}`)}
+                              className="text-[#A0A3FF] text-xs font-semibold hover:underline"
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right: questions + public link */}

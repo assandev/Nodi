@@ -364,3 +364,64 @@ export async function submitInterview(sessionToken: string): Promise<void> {
   );
   if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status });
 }
+
+// ── Recruiter Dashboard ────────────────────────────────────────────────────────
+
+export interface RecruiterStats {
+  active_jobs: number;
+  total_sessions: number;
+  submitted_sessions: number;
+  in_progress_sessions: number;
+}
+
+export interface SessionListItem {
+  id: string;
+  status: string;
+  submitted_at: string | null;
+  created_at: string;
+  candidate_id: string;
+  candidate_name: string;
+  candidate_email: string;
+  responses_count: number;
+  transcribed_count: number;
+}
+
+export interface ResponseWithQuestion {
+  id: string;
+  question_id: string;
+  question_text: string;
+  question_position: number;
+  audio_duration_seconds: number | null;
+  transcript: string | null;
+  transcription_status: "pending" | "processing" | "completed" | "failed";
+  recorded_at: string | null;
+}
+
+export interface SessionDetail {
+  id: string;
+  status: string;
+  started_at: string | null;
+  submitted_at: string | null;
+  created_at: string;
+  candidate: CandidateOut;
+  responses: ResponseWithQuestion[];
+}
+
+export async function getDashboardStats(): Promise<RecruiterStats> {
+  const res = await apiFetch("/jobs/stats");
+  if (!res.ok) throw new Error("Failed to load stats");
+  return res.json();
+}
+
+export async function getJobInterviews(jobId: string): Promise<SessionListItem[]> {
+  const res = await apiFetch(`/jobs/${jobId}/interviews`);
+  if (!res.ok) throw new Error("Failed to load interviews");
+  return res.json();
+}
+
+export async function getJobInterview(jobId: string, sessionId: string): Promise<SessionDetail> {
+  const res = await apiFetch(`/jobs/${jobId}/interviews/${sessionId}`);
+  if (res.status === 404) throw Object.assign(new Error("Not found"), { status: 404 });
+  if (!res.ok) throw new Error("Failed to load interview");
+  return res.json();
+}

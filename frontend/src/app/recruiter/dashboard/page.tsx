@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getJobs, JobOut } from "@/lib/api";
+import { getDashboardStats, getJobs, JobOut, RecruiterStats } from "@/lib/api";
 
 const STATUS_LABEL: Record<JobOut["status"], string> = {
   active: "Active",
@@ -21,22 +21,37 @@ const STATUS_COLOR: Record<JobOut["status"], string> = {
 export default function DashboardPage() {
   const router = useRouter();
   const [jobs, setJobs] = useState<JobOut[]>([]);
+  const [statsData, setStatsData] = useState<RecruiterStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getJobs()
-      .then(setJobs)
+    Promise.all([getJobs(), getDashboardStats()])
+      .then(([j, s]) => { setJobs(j); setStatsData(s); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const activeCount = jobs.filter((j) => j.status === "active").length;
-
   const stats = [
-    { label: "Active Vacancies", value: loading ? "…" : String(activeCount), icon: "assignment" },
-    { label: "Invitations Sent", value: "0", icon: "send" },
-    { label: "Completed Interviews", value: "0", icon: "check_circle" },
-    { label: "AI Recommended", value: "0", icon: "psychology" },
+    {
+      label: "Active Vacancies",
+      value: loading ? "…" : String(statsData?.active_jobs ?? 0),
+      icon: "assignment",
+    },
+    {
+      label: "Interviews Started",
+      value: loading ? "…" : String(statsData?.total_sessions ?? 0),
+      icon: "send",
+    },
+    {
+      label: "Completed Interviews",
+      value: loading ? "…" : String(statsData?.submitted_sessions ?? 0),
+      icon: "check_circle",
+    },
+    {
+      label: "In Progress",
+      value: loading ? "…" : String(statsData?.in_progress_sessions ?? 0),
+      icon: "pending",
+    },
   ];
 
   return (
