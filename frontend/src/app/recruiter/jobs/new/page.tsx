@@ -12,12 +12,12 @@ import {
 } from "@/lib/api";
 
 const inputClass =
-  "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#A0A3FF]/30 focus:border-[#A0A3FF] transition-colors bg-white resize-none";
+  "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#22C55E]/30 focus:border-[#22C55E] transition-colors bg-white resize-none";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Technical: "text-blue-400",
-  Behavioral: "text-purple-300",
-  "Culture Fit": "text-[#2FC278]",
+  Technical: "text-blue-500",
+  Behavioral: "text-[#8B5CF6]",
+  "Culture Fit": "text-[#10B981]",
 };
 
 export default function NewJobPage() {
@@ -170,7 +170,7 @@ export default function NewJobPage() {
           <button
             onClick={() => handleSave(true)}
             disabled={saving}
-            className="bg-[#A0A3FF] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#8C8FF0] disabled:opacity-50 transition-colors"
+            className="bg-[#22C55E] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#16A34A] disabled:opacity-50 transition-colors"
           >
             {saving ? "Publishing…" : "Publish"}
           </button>
@@ -264,23 +264,23 @@ export default function NewJobPage() {
 
         {/* Right: AI questions panel */}
         <aside className="lg:col-span-4">
-          <div className="bg-[#0F172A] rounded-2xl p-6 text-white sticky top-8">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm sticky top-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="bg-[#A0A3FF]/20 p-2 rounded-lg shrink-0">
-                <span className="material-symbols-outlined text-[#A0A3FF]">auto_awesome</span>
+              <div className="bg-[#22C55E]/15 p-2 rounded-lg shrink-0">
+                <span className="material-symbols-outlined text-[#22C55E]">auto_awesome</span>
               </div>
               <div>
-                <h2 className="font-bold text-sm">AI Interview Questions</h2>
-                <p className="text-slate-400 text-xs">Generated from your job description</p>
+                <h2 className="font-bold text-sm text-gray-900">AI Interview Questions</h2>
+                <p className="text-gray-500 text-xs">Generated from your job description</p>
               </div>
             </div>
 
             {editableQuestions.length === 0 && !generating && (
               <div className="text-center py-8 mb-4">
-                <span className="material-symbols-outlined text-3xl text-slate-600 mb-2 block">
+                <span className="material-symbols-outlined text-3xl text-gray-300 mb-2 block">
                   quiz
                 </span>
-                <p className="text-slate-500 text-sm">
+                <p className="text-gray-500 text-sm">
                   Fill in the job details and click Generate to get AI-suggested questions.
                 </p>
               </div>
@@ -291,23 +291,23 @@ export default function NewJobPage() {
                 {editableQuestions.map((q, i) => (
                   <div
                     key={i}
-                    className="group bg-white/5 border border-white/10 hover:border-[#A0A3FF]/40 rounded-xl p-3 transition-colors"
+                    className="group bg-gray-50 border border-gray-200 hover:border-[#22C55E]/40 rounded-xl p-3 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2 mb-1">
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${CATEGORY_COLORS[q.category] ?? "text-slate-400"}`}>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${CATEGORY_COLORS[q.category] ?? "text-gray-400"}`}>
                         {q.category}
                       </span>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                         <button
                           onClick={() => { setEditingIndex(i); setEditingText(q.question_text); }}
-                          className="text-slate-400 hover:text-white transition-colors"
+                          className="text-gray-400 hover:text-gray-700 transition-colors"
                           title="Edit"
                         >
                           <span className="material-symbols-outlined text-base">edit</span>
                         </button>
                         <button
                           onClick={() => deleteQuestion(i)}
-                          className="text-slate-400 hover:text-red-400 transition-colors"
+                          className="text-gray-400 hover:text-red-400 transition-colors"
                           title="Delete"
                         >
                           <span className="material-symbols-outlined text-base">delete</span>
@@ -322,28 +322,28 @@ export default function NewJobPage() {
                           onChange={(e) => setEditingText(e.target.value)}
                           rows={3}
                           autoFocus
-                          className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm resize-none focus:outline-none focus:border-[#A0A3FF]/60"
+                          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm resize-none focus:outline-none focus:border-[#22C55E]"
                         />
                         <div className="flex gap-2 mt-2">
                           <button
                             onClick={() => confirmEdit(i)}
-                            className="text-xs bg-[#A0A3FF] text-white px-3 py-1 rounded-lg font-semibold hover:bg-[#8C8FF0] transition-colors"
+                            className="text-xs bg-[#22C55E] text-white px-3 py-1 rounded-lg font-semibold hover:bg-[#16A34A] transition-colors"
                           >
                             Save
                           </button>
                           <button
                             onClick={() => setEditingIndex(null)}
-                            className="text-xs text-slate-400 hover:text-white px-2 py-1 transition-colors"
+                            className="text-xs text-gray-400 hover:text-gray-700 px-2 py-1 transition-colors"
                           >
                             Cancel
                           </button>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-slate-200 text-sm leading-relaxed">{q.question_text || <em className="text-slate-500">Empty question</em>}</p>
+                      <p className="text-gray-700 text-sm leading-relaxed">{q.question_text || <em className="text-gray-400">Empty question</em>}</p>
                     )}
 
-                    <p className="text-slate-500 text-[10px] mt-1.5">{q.time_limit_seconds}s · {q.question_type}</p>
+                    <p className="text-gray-400 text-[10px] mt-1.5">{q.time_limit_seconds}s · {q.question_type}</p>
                   </div>
                 ))}
               </div>
@@ -352,7 +352,7 @@ export default function NewJobPage() {
             <button
               onClick={handleGenerate}
               disabled={generating}
-              className="w-full bg-[#A0A3FF] text-white rounded-xl py-3 font-bold text-sm hover:bg-[#8C8FF0] disabled:opacity-60 transition-colors mb-3 flex items-center justify-center gap-2"
+              className="w-full bg-[#22C55E] text-white rounded-xl py-3 font-bold text-sm hover:bg-[#16A34A] disabled:opacity-60 transition-colors mb-3 flex items-center justify-center gap-2"
             >
               {generating ? (
                 <>
@@ -369,14 +369,14 @@ export default function NewJobPage() {
 
             <button
               onClick={addCustomQuestion}
-              className="w-full text-slate-400 hover:text-white text-sm font-medium py-2 transition-colors flex items-center justify-center gap-1"
+              className="w-full text-gray-400 hover:text-gray-700 text-sm font-medium py-2 transition-colors flex items-center justify-center gap-1"
             >
               <span className="material-symbols-outlined text-base">add</span>
               Add Custom Question
             </button>
 
             {generateError && (
-              <p className="text-amber-400 text-xs mt-3 bg-amber-400/10 rounded-lg px-3 py-2">
+              <p className="text-amber-600 text-xs mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                 {generateError}
               </p>
             )}

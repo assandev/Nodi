@@ -6,10 +6,10 @@ import { getJobs, JobOut } from "@/lib/api";
 
 function StatusBadge({ status }: { status: JobOut["status"] }) {
   const config = {
-    draft:  { bg: "bg-gray-100",           text: "text-gray-600",   label: "Draft"  },
-    active: { bg: "bg-[#2FC278]/15",        text: "text-[#2FC278]",  label: "Active" },
-    paused: { bg: "bg-yellow-100",          text: "text-yellow-700", label: "Paused" },
-    closed: { bg: "bg-red-100",             text: "text-red-600",    label: "Closed" },
+    draft:  { bg: "bg-gray-100",            text: "text-gray-600",    label: "Draft"  },
+    active: { bg: "bg-[#10B981]/15",         text: "text-[#10B981]",   label: "Active" },
+    paused: { bg: "bg-yellow-100",           text: "text-yellow-700",  label: "Paused" },
+    closed: { bg: "bg-red-100",              text: "text-red-600",     label: "Closed" },
   }[status];
   return (
     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${config.bg} ${config.text}`}>
@@ -37,7 +37,7 @@ export default function JobsPage() {
         <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Vacancies</h2>
         <button
           onClick={() => router.push("/recruiter/jobs/new")}
-          className="bg-[#A0A3FF] text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-[#8C8FF0] transition-colors"
+          className="bg-[#22C55E] text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-[#16A34A] transition-colors"
         >
           Create New Vacancy
         </button>
@@ -45,7 +45,7 @@ export default function JobsPage() {
 
       {loading && (
         <div className="flex justify-center py-16">
-          <div className="size-8 border-2 border-[#A0A3FF] border-t-transparent rounded-full animate-spin" />
+          <div className="size-8 border-2 border-[#22C55E] border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
@@ -91,7 +91,7 @@ export default function JobsPage() {
                   <td className="px-6 py-4 text-right">
                     <Link
                       href={`/recruiter/jobs/${job.id}`}
-                      className="text-[#A0A3FF] text-sm font-semibold hover:underline"
+                      className="text-[#22C55E] text-sm font-semibold hover:underline"
                     >
                       View
                     </Link>

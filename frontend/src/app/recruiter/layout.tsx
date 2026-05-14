@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 export default function RecruiterLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
-      <div className="flex h-screen overflow-hidden bg-[#0F172A]">
+      <div className="flex h-screen overflow-hidden bg-gray-50">
         <Sidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
           <Header />

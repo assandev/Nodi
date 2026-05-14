@@ -24,10 +24,10 @@ interface ErrorInfo {
   message: string;
 }
 
-function NodiLogoOrange() {
+function NodiLogo() {
   return (
     <div className="flex items-center gap-3 mb-8 justify-center">
-      <div className="size-8 text-[#EC5B13]">
+      <div className="size-8 text-[#22C55E]">
         <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"
@@ -35,15 +35,15 @@ function NodiLogoOrange() {
           />
         </svg>
       </div>
-      <span className="text-[#221610] text-2xl font-bold">Nodi</span>
+      <span className="text-gray-900 text-2xl font-bold">Nodi</span>
     </div>
   );
 }
 
 function LoadingScreen() {
   return (
-    <div className="min-h-screen bg-[#F8F6F6] flex items-center justify-center">
-      <div className="size-8 border-2 border-[#EC5B13] border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="size-8 border-2 border-[#22C55E] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 }
@@ -53,15 +53,15 @@ function ErrorScreen({ error }: { error: ErrorInfo }) {
   if (error.status === 404) message = "This session link is invalid or has expired.";
   if (error.status === 410) message = "This interview has already been submitted.";
   return (
-    <div className="min-h-screen bg-[#221610] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="max-w-lg w-full text-center">
-        <NodiLogoOrange />
-        <div className="bg-[#2C1E14] border border-[#3D2A1A] rounded-2xl p-8">
-          <span className="material-symbols-outlined text-5xl text-[#8B6E5A] mb-4 block">
+        <NodiLogo />
+        <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8">
+          <span className="material-symbols-outlined text-5xl text-gray-400 mb-4 block">
             error_outline
           </span>
           <p className="text-white font-semibold text-lg mb-2">Unable to load interview</p>
-          <p className="text-[#8B6E5A] text-sm">{message}</p>
+          <p className="text-gray-400 text-sm">{message}</p>
         </div>
       </div>
     </div>
@@ -81,15 +81,15 @@ function IntroScreen({ data, onStart }: IntroScreenProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8F6F6]">
+    <div className="min-h-screen bg-white">
       <div className="max-w-2xl mx-auto py-16 px-6 text-center">
-        <NodiLogoOrange />
-        <h1 className="text-3xl font-bold text-[#221610] mb-4">You&apos;re ready to begin</h1>
+        <NodiLogo />
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">You&apos;re ready to begin</h1>
         <p className="text-gray-500 mb-10">
           Your interview for{" "}
-          <span className="font-semibold text-[#221610]">{data.job.role}</span> at{" "}
-          <span className="font-semibold text-[#221610]">{data.job.company}</span> has{" "}
-          <span className="font-semibold text-[#221610]">
+          <span className="font-semibold text-gray-900">{data.job.role}</span> at{" "}
+          <span className="font-semibold text-gray-900">{data.job.company}</span> has{" "}
+          <span className="font-semibold text-gray-900">
             {data.questions.length} question{data.questions.length !== 1 ? "s" : ""}
           </span>
           .
@@ -98,13 +98,13 @@ function IntroScreen({ data, onStart }: IntroScreenProps) {
           {tips.map((tip) => (
             <div
               key={tip.label}
-              className="bg-white rounded-2xl px-5 py-4 flex items-start gap-4 shadow-sm border border-gray-100"
+              className="bg-white rounded-2xl px-5 py-4 flex items-start gap-4 shadow-sm border border-gray-200"
             >
-              <div className="h-9 w-9 rounded-full bg-[#EC5B13] flex items-center justify-center flex-shrink-0">
+              <div className="h-9 w-9 rounded-full bg-[#22C55E] flex items-center justify-center flex-shrink-0">
                 <span className="material-symbols-outlined text-white text-base">{tip.icon}</span>
               </div>
               <div>
-                <p className="font-semibold text-[#221610] text-sm">{tip.label}</p>
+                <p className="font-semibold text-gray-900 text-sm">{tip.label}</p>
                 <p className="text-gray-400 text-xs mt-0.5">{tip.desc}</p>
               </div>
             </div>
@@ -112,7 +112,7 @@ function IntroScreen({ data, onStart }: IntroScreenProps) {
         </div>
         <button
           onClick={onStart}
-          className="bg-[#EC5B13] text-white rounded-2xl px-10 py-4 text-base font-bold shadow-lg hover:brightness-105 active:scale-95 transition-all"
+          className="bg-[#22C55E] text-white rounded-2xl px-10 py-4 text-base font-bold shadow-lg hover:bg-[#16A34A] active:scale-95 transition-all"
         >
           Start Interview →
         </button>
@@ -126,16 +126,16 @@ function IntroScreen({ data, onStart }: IntroScreenProps) {
 
 function DoneScreen({ candidateName }: { candidateName: string }) {
   return (
-    <div className="min-h-screen bg-[#F8F6F6] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="max-w-lg w-full text-center">
-        <NodiLogoOrange />
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10">
-          <span className="material-symbols-outlined text-5xl text-[#2FC278] mb-4 block">
+        <NodiLogo />
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10">
+          <span className="material-symbols-outlined text-5xl text-[#10B981] mb-4 block">
             check_circle
           </span>
-          <h2 className="text-2xl font-bold text-[#221610] mb-3">Interview submitted!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Interview submitted!</h2>
           <p className="text-gray-500 text-sm mb-6">
-            Thank you, <span className="font-semibold text-[#221610]">{candidateName}</span>! We&apos;ll
+            Thank you, <span className="font-semibold text-gray-900">{candidateName}</span>! We&apos;ll
             review your responses and be in touch soon.
           </p>
           <p className="text-xs text-gray-400">You can close this tab.</p>
@@ -310,7 +310,7 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
   const ss = String(timeRemaining % 60).padStart(2, "0");
 
   return (
-    <div className="min-h-screen bg-[#F8F6F6] flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <nav className="flex items-center justify-between px-6 py-6">
         <div className="flex items-center gap-3">
           {currentQIndex > 0 && (
@@ -319,7 +319,7 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
                 if (recordingState === "recording") stopRecording();
                 setCurrentQIndex((i) => i - 1);
               }}
-              className="h-10 w-10 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center text-gray-500 hover:text-[#EC5B13] transition-colors"
+              className="h-10 w-10 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center text-gray-500 hover:text-[#22C55E] transition-colors"
             >
               <span className="material-symbols-outlined text-xl">arrow_back</span>
             </button>
@@ -329,7 +329,7 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="size-5 text-[#EC5B13]">
+          <div className="size-5 text-[#22C55E]">
             <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"
@@ -337,7 +337,7 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
               />
             </svg>
           </div>
-          <span className="text-[#221610] font-bold text-sm">Nodi</span>
+          <span className="text-gray-900 font-bold text-sm">Nodi</span>
         </div>
       </nav>
 
@@ -357,7 +357,7 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
                 cy="64"
                 r={radius}
                 fill="none"
-                stroke="#EC5B13"
+                stroke="#22C55E"
                 strokeWidth="8"
                 strokeLinecap="round"
                 strokeDasharray={circumference}
@@ -371,7 +371,7 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
                 textAnchor="middle"
                 fontSize="20"
                 fontWeight="700"
-                fill="#221610"
+                fill="#111827"
                 fontFamily="sans-serif"
               >
                 {mm}:{ss}
@@ -385,7 +385,7 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
           <div className="mb-8 h-[152px] flex items-center justify-center" />
         )}
 
-        <h2 className="text-3xl md:text-4xl font-bold text-[#221610] leading-tight max-w-2xl">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight max-w-2xl">
           &ldquo;{currentQuestion.question_text}&rdquo;
         </h2>
         <p className="mt-4 text-gray-500">Take a moment to reflect before answering.</p>
@@ -394,14 +394,14 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
           {recordingState === "idle" && (
             <>
               {hasResponse ? (
-                <button onClick={reRecord} className="text-sm text-gray-400 hover:text-[#221610] underline">
+                <button onClick={reRecord} className="text-sm text-gray-400 hover:text-gray-900 underline">
                   Re-record response
                 </button>
               ) : (
                 <>
                   <button
                     onClick={startRecording}
-                    className="h-24 w-24 mx-auto rounded-full bg-[#EC5B13] text-white flex items-center justify-center shadow-xl hover:brightness-105 active:scale-95 transition-all"
+                    className="h-24 w-24 mx-auto rounded-full bg-[#22C55E] text-white flex items-center justify-center shadow-xl hover:bg-[#16A34A] active:scale-95 transition-all"
                   >
                     <span className="material-symbols-outlined text-4xl">mic</span>
                   </button>
@@ -413,7 +413,7 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
 
           {recordingState === "recording" && (
             <>
-              <div className="relative flex h-28 w-full max-w-lg mx-auto items-center justify-center rounded-2xl bg-white border border-gray-100 shadow-sm px-8">
+              <div className="relative flex h-28 w-full max-w-lg mx-auto items-center justify-center rounded-2xl bg-white border border-gray-200 shadow-sm px-8">
                 <div className="absolute left-4 top-4 flex items-center gap-2">
                   <span className="relative flex h-3 w-3">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
@@ -428,14 +428,14 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
                     <div
                       key={i}
                       style={{ height: `${h}px` }}
-                      className="w-1.5 rounded-full bg-[#EC5B13] transition-all duration-100"
+                      className="w-1.5 rounded-full bg-[#22C55E] transition-all duration-100"
                     />
                   ))}
                 </div>
               </div>
               <button
                 onClick={stopRecording}
-                className="rounded-full bg-white border-2 border-[#EC5B13] text-[#EC5B13] px-6 py-2.5 font-semibold text-sm flex items-center gap-2 mx-auto mt-4 hover:bg-[#EC5B13] hover:text-white transition-all"
+                className="rounded-full bg-white border-2 border-[#22C55E] text-[#22C55E] px-6 py-2.5 font-semibold text-sm flex items-center gap-2 mx-auto mt-4 hover:bg-[#22C55E] hover:text-white transition-all"
               >
                 <span className="material-symbols-outlined text-base">stop</span>
                 Stop Recording
@@ -450,7 +450,7 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
                 src={responses[currentQuestion.id]?.url}
                 className="w-full max-w-md mx-auto rounded-xl"
               />
-              <button onClick={reRecord} className="mt-3 text-sm text-gray-400 hover:text-[#221610] underline">
+              <button onClick={reRecord} className="mt-3 text-sm text-gray-400 hover:text-gray-900 underline">
                 Re-record
               </button>
             </>
@@ -462,7 +462,7 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
             <button
               onClick={advanceOrSubmit}
               disabled={uploading}
-              className="bg-[#EC5B13] text-white rounded-2xl px-10 py-3.5 text-sm font-bold shadow-md hover:brightness-105 active:scale-95 transition-all disabled:opacity-60"
+              className="bg-[#22C55E] text-white rounded-2xl px-10 py-3.5 text-sm font-bold shadow-md hover:bg-[#16A34A] active:scale-95 transition-all disabled:opacity-60"
             >
               {uploading ? "Uploading…" : isLast ? "Submit Interview" : "Next Question →"}
             </button>
@@ -479,12 +479,12 @@ function InterviewScreen({ sessionToken, questions, onComplete, onError }: Inter
 
       <footer className="border-t border-gray-200 py-6 px-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center">
             <span className="material-symbols-outlined text-gray-400 text-base">smart_toy</span>
           </div>
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Interviewer</p>
-            <p className="text-xs font-semibold text-[#221610]">Nodi AI</p>
+            <p className="text-xs font-semibold text-gray-900">Nodi AI</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-gray-400">

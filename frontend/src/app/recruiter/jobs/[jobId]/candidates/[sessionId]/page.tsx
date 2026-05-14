@@ -5,10 +5,10 @@ import Link from "next/link";
 import { getJobInterview, SessionDetail } from "@/lib/api";
 
 const TRANSCRIPTION_STATUS = {
-  pending:    { label: "Pending",    color: "text-gray-400",   icon: "schedule"       },
-  processing: { label: "Processing", color: "text-yellow-500", icon: "sync"           },
-  completed:  { label: "Transcribed",color: "text-[#2FC278]",  icon: "check_circle"   },
-  failed:     { label: "Failed",     color: "text-red-400",    icon: "error"          },
+  pending:    { label: "Pending",     color: "text-gray-400",    icon: "schedule"     },
+  processing: { label: "Processing",  color: "text-yellow-500",  icon: "sync"         },
+  completed:  { label: "Transcribed", color: "text-[#10B981]",   icon: "check_circle" },
+  failed:     { label: "Failed",      color: "text-red-400",     icon: "error"        },
 };
 
 const SESSION_STATUS: Record<string, string> = {
@@ -51,7 +51,7 @@ export default function SessionDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="size-8 border-2 border-[#A0A3FF] border-t-transparent rounded-full animate-spin" />
+        <div className="size-8 border-2 border-[#22C55E] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -74,9 +74,9 @@ export default function SessionDetailPage() {
       {/* Breadcrumb + Report CTA */}
       <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-2 text-sm text-gray-400">
-        <Link href="/recruiter/jobs" className="hover:text-[#A0A3FF] transition-colors">Vacancies</Link>
+        <Link href="/recruiter/jobs" className="hover:text-[#22C55E] transition-colors">Vacancies</Link>
         <span>/</span>
-        <Link href={`/recruiter/jobs/${params.jobId}`} className="hover:text-[#A0A3FF] transition-colors">
+        <Link href={`/recruiter/jobs/${params.jobId}`} className="hover:text-[#22C55E] transition-colors">
           Job Detail
         </Link>
         <span>/</span>
@@ -84,7 +84,7 @@ export default function SessionDetailPage() {
       </div>
         <Link
           href={`/recruiter/jobs/${params.jobId}/candidates/${params.sessionId}/report`}
-          className="flex items-center gap-1.5 bg-[#A0A3FF] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-[#8C8FF0] transition-colors"
+          className="flex items-center gap-1.5 bg-[#22C55E] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-[#16A34A] transition-colors"
         >
           <span className="material-symbols-outlined text-base">assessment</span>
           View Report
@@ -96,8 +96,8 @@ export default function SessionDetailPage() {
         <div className="lg:col-span-1 space-y-4">
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-5">
-              <div className="size-12 rounded-full bg-[#A0A3FF]/15 flex items-center justify-center shrink-0">
-                <span className="text-[#A0A3FF] font-bold text-lg">
+              <div className="size-12 rounded-full bg-[#22C55E]/15 flex items-center justify-center shrink-0">
+                <span className="text-[#22C55E] font-bold text-lg">
                   {data.candidate.full_name.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -131,7 +131,7 @@ export default function SessionDetailPage() {
                   href={data.candidate.linkedin_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-[#A0A3FF] hover:underline"
+                  className="flex items-center gap-2 text-[#22C55E] hover:underline"
                 >
                   <span className="material-symbols-outlined text-base">link</span>
                   LinkedIn
@@ -142,7 +142,7 @@ export default function SessionDetailPage() {
                   href={data.candidate.portfolio_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-[#A0A3FF] hover:underline"
+                  className="flex items-center gap-2 text-[#22C55E] hover:underline"
                 >
                   <span className="material-symbols-outlined text-base">open_in_new</span>
                   Portfolio
@@ -195,7 +195,7 @@ export default function SessionDetailPage() {
                 <div key={r.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-[#A0A3FF] font-bold text-sm">Q{r.question_position}</span>
+                      <span className="text-[#22C55E] font-bold text-sm">Q{r.question_position}</span>
                       <h4 className="font-semibold text-gray-900 text-sm leading-snug">{r.question_text}</h4>
                     </div>
                     <div className={`flex items-center gap-1 shrink-0 text-xs font-semibold ${ts.color}`}>

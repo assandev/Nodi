@@ -209,9 +209,20 @@ def list_job_interviews(
         .order_by(InterviewSession.created_at.desc())
         .all()
     )
+    session_ids = [s.id for s in sessions]
+    evaluations: dict[str, InterviewEvaluation] = {}
+    if session_ids:
+        evals = (
+            db.query(InterviewEvaluation)
+            .filter(InterviewEvaluation.session_id.in_(session_ids))
+            .all()
+        )
+        evaluations = {str(e.session_id): e for e in evals}
+
     result = []
     for s in sessions:
         responses = s.responses
+        ev = evaluations.get(str(s.id))
         result.append(
             SessionListItem(
                 id=s.id,
@@ -225,6 +236,9 @@ def list_job_interviews(
                 transcribed_count=sum(
                     1 for r in responses if r.transcription_status == "completed"
                 ),
+                overall_score=ev.overall_score if ev else None,
+                recommendation=ev.recommendation if ev else None,
+                evaluation_status=ev.evaluation_status if ev else None,
             )
         )
     return result

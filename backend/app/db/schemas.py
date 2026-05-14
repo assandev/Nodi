@@ -264,6 +264,9 @@ class SessionListItem(BaseModel):
     candidate_email: str
     responses_count: int
     transcribed_count: int
+    overall_score: Optional[int] = None
+    recommendation: Optional[str] = None
+    evaluation_status: Optional[str] = None
 
 
 class SessionDetail(BaseModel):

@@ -389,6 +389,33 @@ export interface SessionListItem {
   candidate_email: string;
   responses_count: number;
   transcribed_count: number;
+  overall_score: number | null;
+  recommendation: "advance" | "hold" | "reject" | null;
+  evaluation_status: "pending" | "processing" | "completed" | "failed" | null;
+}
+
+export interface EnrichedSession extends SessionListItem {
+  job_id: string;
+  job_role: string;
+  job_company: string;
+}
+
+export async function getAllSessions(): Promise<EnrichedSession[]> {
+  const jobs = await getJobs();
+  if (jobs.length === 0) return [];
+  const perJob = await Promise.all(
+    jobs.map((job) =>
+      getJobInterviews(job.id).then((sessions) =>
+        sessions.map((s) => ({
+          ...s,
+          job_id: job.id,
+          job_role: job.role,
+          job_company: job.company,
+        }))
+      )
+    )
+  );
+  return perJob.flat();
 }
 
 export interface ResponseWithQuestion {

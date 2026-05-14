@@ -6,10 +6,10 @@ import { getPublicJob, startInterview, PublicJobData } from "@/lib/api";
 
 type Phase = "loading" | "error" | "preview" | "register" | "submitting" | "already_done";
 
-function NodiLogoOrange() {
+function NodiLogo() {
   return (
     <div className="flex items-center gap-3 mb-8 justify-center">
-      <div className="size-8 text-[#EC5B13]">
+      <div className="size-8 text-[#22C55E]">
         <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"
@@ -17,15 +17,15 @@ function NodiLogoOrange() {
           />
         </svg>
       </div>
-      <span className="text-[#221610] text-2xl font-bold">Nodi</span>
+      <span className="text-gray-900 text-2xl font-bold">Nodi</span>
     </div>
   );
 }
 
 function LoadingScreen() {
   return (
-    <div className="min-h-screen bg-[#F8F6F6] flex items-center justify-center">
-      <div className="size-8 border-2 border-[#EC5B13] border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="size-8 border-2 border-[#22C55E] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 }
@@ -34,15 +34,15 @@ function ErrorScreen({ status }: { status: number }) {
   let message = "Something went wrong. Please try again later.";
   if (status === 404) message = "This interview link is invalid or no longer active.";
   return (
-    <div className="min-h-screen bg-[#221610] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="max-w-lg w-full text-center">
-        <NodiLogoOrange />
-        <div className="bg-[#2C1E14] border border-[#3D2A1A] rounded-2xl p-8">
-          <span className="material-symbols-outlined text-5xl text-[#8B6E5A] mb-4 block">
+        <NodiLogo />
+        <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8">
+          <span className="material-symbols-outlined text-5xl text-gray-400 mb-4 block">
             error_outline
           </span>
           <p className="text-white font-semibold text-lg mb-2">Link not available</p>
-          <p className="text-[#8B6E5A] text-sm">{message}</p>
+          <p className="text-gray-400 text-sm">{message}</p>
         </div>
       </div>
     </div>
@@ -51,14 +51,14 @@ function ErrorScreen({ status }: { status: number }) {
 
 function AlreadyDoneScreen() {
   return (
-    <div className="min-h-screen bg-[#F8F6F6] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="max-w-lg w-full text-center">
-        <NodiLogoOrange />
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10">
-          <span className="material-symbols-outlined text-5xl text-[#2FC278] mb-4 block">
+        <NodiLogo />
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10">
+          <span className="material-symbols-outlined text-5xl text-[#10B981] mb-4 block">
             check_circle
           </span>
-          <h2 className="text-2xl font-bold text-[#221610] mb-3">Already completed</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Already completed</h2>
           <p className="text-gray-500 text-sm">
             You&apos;ve already completed this interview. The hiring team will be in touch soon.
           </p>
@@ -69,8 +69,8 @@ function AlreadyDoneScreen() {
 }
 
 const inputClass =
-  "w-full bg-[#F0EDE8] border border-[#E0D8CF] rounded-xl px-4 py-2.5 text-[#221610] text-sm placeholder:text-[#9E8E7E] focus:outline-none focus:ring-2 focus:ring-[#EC5B13]/40 focus:border-[#EC5B13] transition-colors";
-const labelClass = "block text-sm font-medium text-[#5C4A38] mb-1.5";
+  "w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#22C55E]/40 focus:border-[#22C55E] transition-colors";
+const labelClass = "block text-sm font-medium text-gray-600 mb-1.5";
 
 export default function InterviewLandingPage() {
   const params = useParams<{ token: string }>();
@@ -136,32 +136,32 @@ export default function InterviewLandingPage() {
 
   if (phase === "preview") {
     return (
-      <div className="min-h-screen bg-[#F8F6F6]">
+      <div className="min-h-screen bg-white">
         <div className="max-w-2xl mx-auto py-16 px-6 text-center">
-          <NodiLogoOrange />
+          <NodiLogo />
 
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mb-8 text-left">
-            <h1 className="text-2xl font-bold text-[#221610] mb-1">{data.job.title}</h1>
-            <p className="text-[#EC5B13] font-semibold text-sm mb-4">{data.job.company}</p>
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-8 text-left">
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">{data.job.title}</h1>
+            <p className="text-[#22C55E] font-semibold text-sm mb-4">{data.job.company}</p>
             <p className="text-gray-500 text-sm leading-relaxed">{data.job.description_preview}</p>
           </div>
 
           <div className="flex items-center justify-center gap-4 mb-10">
-            <div className="flex items-center gap-2 bg-white border border-gray-100 rounded-full px-4 py-2 shadow-sm">
-              <span className="material-symbols-outlined text-[#EC5B13] text-base">quiz</span>
-              <span className="text-sm font-semibold text-[#221610]">
+            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm">
+              <span className="material-symbols-outlined text-[#22C55E] text-base">quiz</span>
+              <span className="text-sm font-semibold text-gray-900">
                 {data.questions_count} question{data.questions_count !== 1 ? "s" : ""}
               </span>
             </div>
-            <div className="flex items-center gap-2 bg-white border border-gray-100 rounded-full px-4 py-2 shadow-sm">
-              <span className="material-symbols-outlined text-[#EC5B13] text-base">schedule</span>
-              <span className="text-sm font-semibold text-[#221610]">~{data.estimated_minutes} min</span>
+            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm">
+              <span className="material-symbols-outlined text-[#22C55E] text-base">schedule</span>
+              <span className="text-sm font-semibold text-gray-900">~{data.estimated_minutes} min</span>
             </div>
           </div>
 
           <button
             onClick={() => setPhase("register")}
-            className="bg-[#EC5B13] text-white rounded-2xl px-10 py-4 text-base font-bold shadow-lg hover:brightness-105 active:scale-95 transition-all"
+            className="bg-[#22C55E] text-white rounded-2xl px-10 py-4 text-base font-bold shadow-lg hover:bg-[#16A34A] active:scale-95 transition-all"
           >
             Begin Interview →
           </button>
@@ -175,13 +175,13 @@ export default function InterviewLandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F6F6]">
+    <div className="min-h-screen bg-white">
       <div className="max-w-lg mx-auto py-12 px-4">
-        <NodiLogoOrange />
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-8">
+        <NodiLogo />
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
           <div className="mb-6">
-            <h1 className="text-[#221610] text-xl font-bold">{data.job.title}</h1>
-            <p className="text-[#EC5B13] text-sm font-semibold mt-0.5">{data.job.company}</p>
+            <h1 className="text-gray-900 text-xl font-bold">{data.job.title}</h1>
+            <p className="text-[#22C55E] text-sm font-semibold mt-0.5">{data.job.company}</p>
             <p className="text-gray-500 text-sm mt-4">Tell us about yourself to begin</p>
           </div>
 
@@ -227,7 +227,7 @@ export default function InterviewLandingPage() {
             </div>
             <div>
               <label className={labelClass}>
-                LinkedIn URL <span className="text-[#9E8E7E]">(optional)</span>
+                LinkedIn URL <span className="text-gray-400">(optional)</span>
               </label>
               <input
                 type="url"
@@ -239,7 +239,7 @@ export default function InterviewLandingPage() {
             </div>
             <div>
               <label className={labelClass}>
-                Location <span className="text-[#9E8E7E]">(optional)</span>
+                Location <span className="text-gray-400">(optional)</span>
               </label>
               <input
                 type="text"
@@ -251,7 +251,7 @@ export default function InterviewLandingPage() {
             </div>
             <div>
               <label className={labelClass}>
-                Years of experience <span className="text-[#9E8E7E]">(optional)</span>
+                Years of experience <span className="text-gray-400">(optional)</span>
               </label>
               <input
                 type="number"
@@ -264,7 +264,7 @@ export default function InterviewLandingPage() {
             </div>
             <button
               type="submit"
-              className="w-full bg-[#EC5B13] text-white rounded-xl py-2.5 text-sm font-bold hover:brightness-105 transition-all mt-2"
+              className="w-full bg-[#22C55E] text-white rounded-xl py-2.5 text-sm font-bold hover:bg-[#16A34A] transition-all mt-2"
             >
               Start Interview →
             </button>
