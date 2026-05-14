@@ -142,6 +142,68 @@ The Candidates, Interviews, and Reports pages call `getAllSessions()`, which fet
 
 ---
 
+## Running Locally
+
+### Prerequisites
+
+- Python 3.11+
+- Node.js 20+
+- PostgreSQL (or a Supabase project)
+- [Ollama](https://ollama.com) installed and running
+- `ffmpeg` installed (`sudo apt install ffmpeg` / `brew install ffmpeg`)
+
+### 1. Clone and set up the backend
+
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env   # fill in DATABASE_URL and SECRET_KEY
+```
+
+### 2. Run database migrations
+
+```bash
+alembic upgrade head
+```
+
+### 3. Pull the LLM model
+
+```bash
+ollama pull llama3.1
+```
+
+The faster-whisper `base` model (~140 MB) downloads automatically on first transcription request.
+
+### 4. Start the backend
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+API docs available at `http://localhost:8000/docs`.
+
+### 5. Set up and start the frontend
+
+```bash
+cd frontend
+npm install
+```
+
+Create `frontend/.env.local`:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+```bash
+npm run dev
+```
+
+Frontend runs at `http://localhost:3000`.
+
+---
+
 ## Environment Variables
 
 Copy `backend/.env.example` and fill in:
