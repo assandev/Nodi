@@ -53,6 +53,7 @@ class Job(Base):
     culture_notes = Column(Text)
     status = Column(Text, nullable=False, default="draft")
     ai_question_suggestions = Column(JSONB)
+    public_token = Column(Text, nullable=True, unique=True)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, default=_now)
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, default=_now, onupdate=_now)
 
@@ -66,6 +67,7 @@ class Job(Base):
     recruiter = relationship("User", back_populates="jobs")
     questions = relationship("InterviewQuestion", back_populates="job")
     invitations = relationship("InterviewInvitation", back_populates="job")
+    sessions = relationship("InterviewSession", back_populates="job")
 
 
 class InterviewQuestion(Base):
@@ -112,6 +114,7 @@ class Candidate(Base):
     )
 
     invitations = relationship("InterviewInvitation", back_populates="candidate")
+    sessions = relationship("InterviewSession", back_populates="candidate")
 
 
 class InterviewInvitation(Base):
@@ -148,7 +151,8 @@ class InterviewResponse(Base):
     __tablename__ = "interview_responses"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    invitation_id = Column(UUID(as_uuid=True), ForeignKey("interview_invitations.id"), nullable=False)
+    invitation_id = Column(UUID(as_uuid=True), ForeignKey("interview_invitations.id"), nullable=True)
+    session_id = Column(UUID(as_uuid=True), ForeignKey("interview_sessions.id"), nullable=True)
     question_id = Column(UUID(as_uuid=True), ForeignKey("interview_questions.id"), nullable=False)
     audio_storage_key = Column(Text)
     audio_duration_seconds = Column(Integer)
@@ -160,6 +164,7 @@ class InterviewResponse(Base):
 
     __table_args__ = (
         UniqueConstraint("invitation_id", "question_id", name="uq_responses_invitation_question"),
+        UniqueConstraint("session_id", "question_id", name="uq_responses_session_question"),
         CheckConstraint("audio_duration_seconds >= 0", name="responses_duration_check"),
         CheckConstraint(
             "transcription_status IN ('pending','processing','completed','failed')",
@@ -168,6 +173,7 @@ class InterviewResponse(Base):
     )
 
     invitation = relationship("InterviewInvitation", back_populates="responses")
+    session = relationship("InterviewSession", back_populates="responses")
     question = relationship("InterviewQuestion", back_populates="responses")
 
 
@@ -195,6 +201,31 @@ class InterviewEvaluation(Base):
     )
 
     invitation = relationship("InterviewInvitation", back_populates="evaluation")
+
+
+class InterviewSession(Base):
+    __tablename__ = "interview_sessions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    job_id = Column(UUID(as_uuid=True), ForeignKey("jobs.id"), nullable=False)
+    candidate_id = Column(UUID(as_uuid=True), ForeignKey("candidates.id"), nullable=False)
+    session_token_hash = Column(Text, nullable=False, unique=True)
+    status = Column(Text, nullable=False, default="started")
+    started_at = Column(TIMESTAMP(timezone=True))
+    submitted_at = Column(TIMESTAMP(timezone=True))
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, default=_now)
+    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, default=_now, onupdate=_now)
+
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('started','in_progress','submitted','completed','failed','expired')",
+            name="sessions_status_check",
+        ),
+    )
+
+    job = relationship("Job", back_populates="sessions")
+    candidate = relationship("Candidate", back_populates="sessions")
+    responses = relationship("InterviewResponse", back_populates="session")
 
 
 class InvitationEvent(Base):

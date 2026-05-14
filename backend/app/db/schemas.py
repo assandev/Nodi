@@ -57,6 +57,7 @@ class JobOut(BaseModel):
     culture_notes: Optional[str]
     status: str
     ai_question_suggestions: Optional[Any]
+    public_token: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -169,6 +170,64 @@ class EvaluationOut(BaseModel):
     model_version: Optional[str]
     evaluation_status: str
     evaluated_at: Optional[datetime]
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+# ── Interview Sessions ────────────────────────────────────────────────────────
+
+class PublicJobOut(BaseModel):
+    job: dict
+    questions_count: int
+    estimated_minutes: int
+    status: str
+
+
+class StartInterviewBody(BaseModel):
+    full_name: str
+    email: EmailStr
+    phone: str
+    linkedin_url: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    location: Optional[str] = None
+    years_experience: Optional[int] = None
+
+
+class StartInterviewResponse(BaseModel):
+    session_token: str
+    interview_url: str
+    questions: list[QuestionOut]
+
+
+class SessionOut(BaseModel):
+    id: UUID
+    job_id: UUID
+    candidate_id: UUID
+    status: str
+    started_at: Optional[datetime]
+    submitted_at: Optional[datetime]
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class InterviewSessionData(BaseModel):
+    session: SessionOut
+    job: dict
+    questions: list[QuestionOut]
+    candidate: dict
+
+
+class SessionResponseOut(BaseModel):
+    id: UUID
+    session_id: UUID
+    question_id: UUID
+    audio_storage_key: Optional[str]
+    audio_duration_seconds: Optional[int]
+    transcript: Optional[str]
+    transcription_status: str
+    recorded_at: Optional[datetime]
     created_at: datetime
 
     model_config = {"from_attributes": True}

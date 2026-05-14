@@ -46,6 +46,7 @@ export interface JobOut {
   culture_notes: string | null;
   status: "draft" | "active" | "paused" | "closed";
   ai_question_suggestions: AISuggestion[] | null;
+  public_token?: string;
   created_at: string;
   updated_at: string;
 }
@@ -254,4 +255,112 @@ export async function submitCandidateInfo(
   if (res.status === 409) throw Object.assign(new Error("Already submitted"), { status: 409 });
   if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status });
   return res.json();
+}
+
+export async function submitResponse(
+  token: string,
+  questionId: string,
+  audioBlob: Blob,
+  durationSeconds: number
+): Promise<void> {
+  const form = new FormData();
+  form.append("question_id", questionId);
+  form.append("audio", audioBlob, `${questionId}.webm`);
+  form.append("duration_seconds", String(Math.round(durationSeconds)));
+  const res = await fetch(`${BASE_URL}/public/interviews/${token}/responses`, {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status });
+}
+
+export async function completeInterview(token: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/public/interviews/${token}/complete`, {
+    method: "POST",
+  });
+  if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status });
+}
+
+export interface PublicJobData {
+  job: { title: string; company: string; description_preview: string };
+  questions_count: number;
+  estimated_minutes: number;
+  status: "open" | "closed";
+}
+
+export interface SessionStartResponse {
+  session_token: string;
+  interview_url: string;
+  questions: QuestionOut[];
+}
+
+export interface InterviewSessionData {
+  session: { id: string; status: string; started_at: string | null; submitted_at: string | null };
+  job: { id: string; role: string; company: string };
+  questions: QuestionOut[];
+  candidate: { full_name: string };
+}
+
+export async function getPublicJob(publicToken: string): Promise<PublicJobData> {
+  const res = await fetch(`${BASE_URL}/public/jobs/${publicToken}`);
+  if (res.status === 404) throw Object.assign(new Error("Not found"), { status: 404 });
+  if (!res.ok) throw Object.assign(new Error("Failed to load job"), { status: res.status });
+  return res.json();
+}
+
+export async function startInterview(
+  publicToken: string,
+  data: {
+    full_name: string;
+    email: string;
+    phone: string;
+    linkedin_url?: string;
+    location?: string;
+    years_experience?: number;
+  }
+): Promise<SessionStartResponse> {
+  const res = await fetch(`${BASE_URL}/public/jobs/${publicToken}/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (res.status === 409) throw Object.assign(new Error("already_completed"), { status: 409 });
+  if (res.status === 404) throw Object.assign(new Error("Job not found"), { status: 404 });
+  if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status });
+  return res.json();
+}
+
+export async function getInterviewSession(
+  sessionToken: string
+): Promise<InterviewSessionData> {
+  const res = await fetch(`${BASE_URL}/public/interview-sessions/${sessionToken}`);
+  if (res.status === 404) throw Object.assign(new Error("Session not found"), { status: 404 });
+  if (res.status === 410) throw Object.assign(new Error("Already submitted"), { status: 410 });
+  if (!res.ok) throw Object.assign(new Error("Failed to load session"), { status: res.status });
+  return res.json();
+}
+
+export async function submitSessionResponse(
+  sessionToken: string,
+  questionId: string,
+  audioBlob: Blob,
+  durationSeconds: number
+): Promise<void> {
+  const form = new FormData();
+  form.append("question_id", questionId);
+  form.append("audio", audioBlob, `${questionId}.webm`);
+  form.append("duration_seconds", String(Math.round(durationSeconds)));
+  const res = await fetch(
+    `${BASE_URL}/public/interview-sessions/${sessionToken}/responses`,
+    { method: "POST", body: form }
+  );
+  if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status });
+}
+
+export async function submitInterview(sessionToken: string): Promise<void> {
+  const res = await fetch(
+    `${BASE_URL}/public/interview-sessions/${sessionToken}/submit`,
+    { method: "POST" }
+  );
+  if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status });
 }

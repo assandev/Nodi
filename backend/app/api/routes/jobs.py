@@ -1,3 +1,5 @@
+import re
+import secrets
 from typing import Annotated
 from uuid import UUID
 
@@ -13,6 +15,11 @@ from app.db.schemas import JobCreate, JobOut, JobUpdate, QuestionCreate, Questio
 from app.db.session import get_db
 
 router = APIRouter()
+
+
+def _generate_public_token(role: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", role.lower()).strip("-")[:40]
+    return f"{slug}-{secrets.token_urlsafe(4)}"
 
 
 def _get_owned_job(job_id: UUID, current_user: User, db: Session) -> Job:
@@ -31,6 +38,7 @@ def create_job(
     db: Session = Depends(get_db),
 ) -> JobOut:
     job = Job(recruiter_id=current_user.id, **body.model_dump())
+    job.public_token = _generate_public_token(body.role)
     db.add(job)
     db.commit()
     db.refresh(job)

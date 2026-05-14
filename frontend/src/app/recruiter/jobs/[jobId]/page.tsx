@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getJob, getQuestions, createInvitation, JobOut, QuestionOut } from "@/lib/api";
+import { getJob, getQuestions, JobOut, QuestionOut } from "@/lib/api";
 
 function StatusBadge({ status }: { status: JobOut["status"] }) {
   const config = {
@@ -33,9 +33,7 @@ export default function JobDetailPage() {
   const [questions, setQuestions] = useState<QuestionOut[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [inviteLink, setInviteLink] = useState<string | null>(null);
-  const [creatingLink, setCreatingLink] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedPublic, setCopiedPublic] = useState(false);
 
   useEffect(() => {
     Promise.all([getJob(params.jobId), getQuestions(params.jobId)])
@@ -44,24 +42,13 @@ export default function JobDetailPage() {
       .finally(() => setLoading(false));
   }, [params.jobId]);
 
-  async function handleGenerateInvite() {
-    if (!job) return;
-    setCreatingLink(true);
-    try {
-      const inv = await createInvitation(job.id);
-      setInviteLink(`${window.location.origin}/interview/${inv.token}`);
-    } catch {
-      // silent — could show a toast here
-    } finally {
-      setCreatingLink(false);
-    }
-  }
-
-  async function handleCopy() {
-    if (!inviteLink) return;
-    await navigator.clipboard.writeText(inviteLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  function handleCopyPublic() {
+    if (!job?.public_token) return;
+    const url = `${window.location.origin}/interview/${job.public_token}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedPublic(true);
+      setTimeout(() => setCopiedPublic(false), 2000);
+    });
   }
 
   if (loading) {
@@ -98,62 +85,13 @@ export default function JobDetailPage() {
           </div>
           <p className="text-gray-500 mt-1">{job.company}</p>
         </div>
-        <div className="flex gap-3 shrink-0">
-          <Link
-            href={`/recruiter/jobs/${job.id}/edit`}
-            className="border border-gray-200 bg-white text-gray-700 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
-          >
-            Edit
-          </Link>
-          <button
-            onClick={handleGenerateInvite}
-            disabled={creatingLink}
-            className="bg-[#A0A3FF] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#8C8FF0] disabled:opacity-60 transition-colors flex items-center gap-2"
-          >
-            {creatingLink ? (
-              <>
-                <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Generating…
-              </>
-            ) : (
-              "Generate Invite Link"
-            )}
-          </button>
-        </div>
+        <Link
+          href={`/recruiter/jobs/${job.id}/edit`}
+          className="border border-gray-200 bg-white text-gray-700 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
+        >
+          Edit
+        </Link>
       </div>
-
-      {inviteLink && (
-        <div className="bg-[#0F172A] text-white rounded-xl p-4 mb-6 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#A0A3FF] text-base">link</span>
-              <span className="text-sm font-semibold">Candidate Interview Link</span>
-            </div>
-            <button
-              onClick={() => setInviteLink(null)}
-              className="text-[#8899BB] hover:text-white transition-colors"
-              title="Close"
-            >
-              <span className="material-symbols-outlined text-base">close</span>
-            </button>
-          </div>
-          <div className="flex gap-2">
-            <input
-              readOnly
-              value={inviteLink}
-              className="flex-1 bg-[#1E2744] border border-[#2A3A5E] rounded-xl px-4 py-2.5 text-sm text-[#8899BB] focus:outline-none select-all"
-              onFocus={(e) => e.target.select()}
-            />
-            <button
-              onClick={handleCopy}
-              className="bg-[#A0A3FF] text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-[#8C8FF0] transition-colors shrink-0"
-            >
-              {copied ? "Copied!" : "Copy"}
-            </button>
-          </div>
-          <p className="text-[#8899BB] text-xs">Share this link with the candidate. It expires in 7 days.</p>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left: job details */}
@@ -164,8 +102,50 @@ export default function JobDetailPage() {
           {job.culture_notes && <Section title="Culture Notes">{job.culture_notes}</Section>}
         </div>
 
-        {/* Right: questions */}
-        <div className="lg:col-span-1">
+        {/* Right: questions + public link */}
+        <div className="lg:col-span-1 space-y-4">
+          {/* Public Interview Link */}
+          {job.public_token && (
+            <div className="bg-[#0F172A] rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-bold uppercase tracking-widest text-[#4A6080]">
+                  Public Interview Link
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      job.status === "active" ? "bg-green-400" : "bg-gray-500"
+                    }`}
+                  />
+                  <span
+                    className={`text-xs font-semibold ${
+                      job.status === "active" ? "text-green-400" : "text-gray-500"
+                    }`}
+                  >
+                    {job.status === "active" ? "Live" : "Inactive"}
+                  </span>
+                </div>
+              </div>
+              {job.status !== "active" && (
+                <p className="text-xs text-[#4A6080] mb-3">
+                  Publish this job to activate the link.
+                </p>
+              )}
+              <div className="flex items-center gap-2 bg-[#131C2E] border border-[#1E2744] rounded-xl px-3 py-2">
+                <span className="text-[#8899BB] text-xs truncate flex-1">
+                  /interview/{job.public_token}
+                </span>
+                <button
+                  onClick={handleCopyPublic}
+                  className="flex-shrink-0 text-xs font-semibold text-[#A0A3FF] hover:text-white transition-colors"
+                >
+                  {copiedPublic ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Interview Questions */}
           <div className="bg-[#0F172A] text-white rounded-xl p-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold text-sm">Interview Questions</h3>
@@ -188,10 +168,7 @@ export default function JobDetailPage() {
             ) : (
               <div className="space-y-3">
                 {questions.map((q) => (
-                  <div
-                    key={q.id}
-                    className="bg-white/5 border border-white/10 rounded-xl p-3"
-                  >
+                  <div key={q.id} className="bg-white/5 border border-white/10 rounded-xl p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-[#A0A3FF] text-xs font-bold">Q{q.position}</span>
                       <span className="text-slate-500 text-[10px]">{q.question_type}</span>

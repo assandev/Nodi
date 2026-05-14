@@ -1,5 +1,8 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routes.auth import router as auth_router, users_router
 from app.api.routes.invitations import router as invitations_router
@@ -23,6 +26,9 @@ app.include_router(users_router, tags=["auth"])
 app.include_router(jobs_router, prefix="/jobs", tags=["jobs"])
 app.include_router(invitations_router, tags=["invitations"])
 app.include_router(public_router, prefix="/public", tags=["public"])
+
+os.makedirs("uploads/audio", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.get("/health")
