@@ -71,8 +71,9 @@ export default function SessionDetailPage() {
 
   return (
     <div>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+      {/* Breadcrumb + Report CTA */}
+      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-2 text-sm text-gray-400">
         <Link href="/recruiter/jobs" className="hover:text-[#A0A3FF] transition-colors">Vacancies</Link>
         <span>/</span>
         <Link href={`/recruiter/jobs/${params.jobId}`} className="hover:text-[#A0A3FF] transition-colors">
@@ -80,6 +81,14 @@ export default function SessionDetailPage() {
         </Link>
         <span>/</span>
         <span className="text-gray-600">{data.candidate.full_name}</span>
+      </div>
+        <Link
+          href={`/recruiter/jobs/${params.jobId}/candidates/${params.sessionId}/report`}
+          className="flex items-center gap-1.5 bg-[#A0A3FF] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-[#8C8FF0] transition-colors"
+        >
+          <span className="material-symbols-outlined text-base">assessment</span>
+          View Report
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -1,12 +1,20 @@
 import json
+import logging
 import re
+import time
 
 import httpx
 
 from app.core.config import settings
 
+logger = logging.getLogger(__name__)
+
 
 class OllamaUnavailableError(Exception):
+    pass
+
+
+class EvaluationError(Exception):
     pass
 
 
@@ -55,8 +63,130 @@ Example:
 ]"""
 
 
+def _build_evaluation_prompt(job, questions_with_transcripts: list[dict]) -> str:
+    qa_block = ""
+    for item in questions_with_transcripts:
+        qa_block += f"\nQuestion {item['position']}: {item['question_text']}\n"
+        qa_block += f"Candidate answer: {item['transcript']}\n"
+
+    return f"""You are an expert technical recruiter. Evaluate the candidate's interview responses against the job requirements.
+
+Job Title: {job.role}
+Company: {job.company}
+Job Description: {job.job_description}
+Requirements: {job.requirements or "Not specified"}
+Culture Notes: {job.culture_notes or "Not specified"}
+
+Interview Transcript:
+{qa_block}
+
+Return ONLY a valid JSON object with no extra text or markdown. The object must have exactly these fields:
+- "summary": string (2-3 sentence executive summary for the recruiter)
+- "overall_score": integer 0-100
+- "seniority_level": one of "Junior", "Mid", "Senior", "Staff"
+- "recommendation": one of "advance", "hold", "reject"
+- "confidence_level": one of "high", "medium", "low"
+- "strengths": array of strings (2-4 items, evidence-based)
+- "gaps": array of strings (1-3 items, actionable)
+- "risks": array of strings (0-2 items)
+- "criteria": array of objects, each with:
+  - "name": string (use exactly these names: "Technical Match", "Communication Clarity", "Problem Solving", "Culture Fit", "Seniority Alignment")
+  - "score": integer 1-5
+  - "reasoning": string (1-2 sentences referencing specific answers)
+  - "evidence": array of short quote strings from the transcript (1-3 items)
+
+Evaluation principles:
+- Only cite evidence from the transcript.
+- Do not infer protected characteristics.
+- Make gaps actionable and specific.
+- recommendation "advance" means move to next round; "hold" means needs more info; "reject" means not a fit.
+
+Example format:
+{{
+  "summary": "...",
+  "overall_score": 75,
+  "seniority_level": "Mid",
+  "recommendation": "advance",
+  "confidence_level": "medium",
+  "strengths": ["..."],
+  "gaps": ["..."],
+  "risks": [],
+  "criteria": [
+    {{"name": "Technical Match", "score": 4, "reasoning": "...", "evidence": ["..."]}}
+  ]
+}}"""
+
+
+async def evaluate_candidate(job, questions_with_transcripts: list[dict]) -> dict:
+    prompt = _build_evaluation_prompt(job, questions_with_transcripts)
+    logger.info("=" * 46)
+    logger.info("  OLLAMA RUNNING  —  evaluate_candidate")
+    logger.info("=" * 46)
+    logger.info("  model    : %s", settings.OLLAMA_MODEL)
+    logger.info("  job      : %s", job.role)
+    logger.info("  questions: %d", len(questions_with_transcripts))
+    logger.info("  prompt   : %d chars", len(prompt))
+    logger.info("-" * 46)
+    t0 = time.perf_counter()
+    try:
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(connect=5.0, read=300.0, write=10.0, pool=5.0)
+        ) as client:
+            response = await client.post(
+                f"{settings.OLLAMA_BASE_URL}/api/generate",
+                json={"model": settings.OLLAMA_MODEL, "prompt": prompt, "stream": False},
+            )
+            response.raise_for_status()
+    except (httpx.ConnectError, httpx.TimeoutException) as exc:
+        elapsed = time.perf_counter() - t0
+        logger.error("=" * 46)
+        logger.error("  OLLAMA FAILED after %.1fs", elapsed)
+        logger.error("  %s", exc)
+        logger.error("=" * 46)
+        raise EvaluationError(str(exc)) from exc
+
+    elapsed = time.perf_counter() - t0
+    body = response.json()
+    raw = body.get("response", "")
+    logger.info("=" * 46)
+    logger.info("  OLLAMA DONE  —  evaluate_candidate")
+    logger.info("=" * 46)
+    logger.info("  elapsed      : %.1fs", elapsed)
+    logger.info("  prompt tokens: %s", body.get("prompt_eval_count", "?"))
+    logger.info("  eval tokens  : %s", body.get("eval_count", "?"))
+    logger.info("  response     : %d chars", len(raw))
+    logger.info("-" * 46)
+    logger.info("  JSON received:\n%s", raw[:800] + ("…" if len(raw) > 800 else ""))
+    logger.info("-" * 46)
+
+    cleaned = re.sub(r"```(?:json)?\s*", "", raw).strip()
+    match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+    if match:
+        cleaned = match.group(0)
+
+    try:
+        result = json.loads(cleaned)
+    except json.JSONDecodeError as exc:
+        raise EvaluationError(f"Failed to parse evaluation JSON: {exc}") from exc
+
+    if not isinstance(result, dict):
+        raise EvaluationError("Evaluation response is not a JSON object")
+
+    logger.info("  Working in: parsed %d top-level keys — %s", len(result), list(result.keys()))
+    logger.info("=" * 46)
+    return result
+
+
 async def generate_interview_questions(job) -> list[dict]:
     prompt = _build_prompt(job)
+    logger.info("=" * 46)
+    logger.info("  OLLAMA RUNNING  —  generate_questions")
+    logger.info("=" * 46)
+    logger.info("  model : %s", settings.OLLAMA_MODEL)
+    logger.info("  job   : %s", job.role)
+    logger.info("  prompt: %d chars", len(prompt))
+    logger.info("-" * 46)
+    t0 = time.perf_counter()
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(connect=5.0, read=60.0, write=10.0, pool=5.0)) as client:
             response = await client.post(
@@ -65,13 +195,28 @@ async def generate_interview_questions(job) -> list[dict]:
             )
             response.raise_for_status()
     except (httpx.ConnectError, httpx.TimeoutException) as exc:
+        elapsed = time.perf_counter() - t0
+        logger.error("=" * 46)
+        logger.error("  OLLAMA FAILED after %.1fs", elapsed)
+        logger.error("  %s", exc)
+        logger.error("=" * 46)
         raise OllamaUnavailableError(str(exc)) from exc
 
-    raw = response.json().get("response", "")
+    elapsed = time.perf_counter() - t0
+    body = response.json()
+    raw = body.get("response", "")
+    logger.info("=" * 46)
+    logger.info("  OLLAMA DONE  —  generate_questions")
+    logger.info("=" * 46)
+    logger.info("  elapsed      : %.1fs", elapsed)
+    logger.info("  prompt tokens: %s", body.get("prompt_eval_count", "?"))
+    logger.info("  eval tokens  : %s", body.get("eval_count", "?"))
+    logger.info("  response     : %d chars", len(raw))
+    logger.info("-" * 46)
+    logger.info("  JSON received:\n%s", raw[:800] + ("…" if len(raw) > 800 else ""))
+    logger.info("-" * 46)
 
-    # Strip markdown code fences if present
     cleaned = re.sub(r"```(?:json)?\s*", "", raw).strip()
-    # Extract the JSON array if there's surrounding text
     match = re.search(r"\[.*\]", cleaned, re.DOTALL)
     if match:
         cleaned = match.group(0)
@@ -89,4 +234,6 @@ async def generate_interview_questions(job) -> list[dict]:
     for i, q in enumerate(questions, start=1):
         q["position"] = i
 
+    logger.info("  Working in: parsed %d questions", len(questions))
+    logger.info("=" * 46)
     return questions

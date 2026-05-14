@@ -3,15 +3,18 @@ import secrets
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.core.config import settings
 from app.core.llm import OllamaUnavailableError, generate_interview_questions
-from app.db.models import InterviewQuestion, InterviewSession, Job, User
+from app.core.evaluation import run_evaluation_bg
+from app.db.models import InterviewEvaluation, InterviewQuestion, InterviewSession, Job, User
 from app.db.schemas import (
+    CandidateOut,
+    EvaluationOut,
     JobCreate,
     JobOut,
     JobUpdate,
@@ -20,8 +23,9 @@ from app.db.schemas import (
     RecruiterStats,
     ResponseWithQuestion,
     SessionDetail,
+    SessionEvaluationOut,
     SessionListItem,
-    CandidateOut,
+    SessionOut,
 )
 from app.db.session import get_db
 
@@ -275,3 +279,83 @@ def get_job_interview(
         candidate=CandidateOut.model_validate(session.candidate),
         responses=responses,
     )
+
+
+@router.get("/{job_id}/interviews/{session_id}/report", response_model=SessionEvaluationOut)
+def get_session_report(
+    job_id: UUID,
+    session_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+) -> SessionEvaluationOut:
+    job = _get_owned_job(job_id, current_user, db)
+    session = (
+        db.query(InterviewSession)
+        .filter(InterviewSession.id == session_id, InterviewSession.job_id == job.id)
+        .first()
+    )
+    if session is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+
+    questions = {
+        str(q.id): q
+        for q in db.query(InterviewQuestion)
+        .filter(InterviewQuestion.job_id == job.id)
+        .all()
+    }
+
+    responses = []
+    for r in session.responses:
+        q = questions.get(str(r.question_id))
+        responses.append(
+            ResponseWithQuestion(
+                id=r.id,
+                question_id=r.question_id,
+                question_text=q.question_text if q else "Unknown question",
+                question_position=q.position if q else 0,
+                audio_duration_seconds=r.audio_duration_seconds,
+                transcript=r.transcript,
+                transcription_status=r.transcription_status,
+                recorded_at=r.recorded_at,
+            )
+        )
+    responses.sort(key=lambda x: x.question_position)
+
+    evaluation = (
+        db.query(InterviewEvaluation)
+        .filter(InterviewEvaluation.session_id == session_id)
+        .first()
+    )
+
+    return SessionEvaluationOut(
+        evaluation=EvaluationOut.model_validate(evaluation) if evaluation else None,
+        session=SessionOut.model_validate(session),
+        candidate=CandidateOut.model_validate(session.candidate),
+        responses=responses,
+        job={"role": job.role, "company": job.company},
+    )
+
+
+@router.post("/{job_id}/interviews/{session_id}/evaluate")
+def trigger_evaluation(
+    job_id: UUID,
+    session_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    job = _get_owned_job(job_id, current_user, db)
+    session = (
+        db.query(InterviewSession)
+        .filter(InterviewSession.id == session_id, InterviewSession.job_id == job.id)
+        .first()
+    )
+    if session is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+    if session.status not in ("submitted", "completed", "in_progress"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Session must be submitted before evaluation",
+        )
+    background_tasks.add_task(run_evaluation_bg, str(session_id))
+    return {"status": "queued", "session_id": str(session_id)}

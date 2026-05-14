@@ -24,6 +24,7 @@ from app.db.schemas import (
     StartInterviewBody,
     StartInterviewResponse,
 )
+from app.core.evaluation import run_evaluation_bg
 from app.core.transcription import TranscriptionError, transcribe_audio
 from app.db.session import SessionLocal, get_db
 
@@ -278,7 +279,9 @@ async def submit_response(
 
 @router.post("/interview-sessions/{session_token}/submit", response_model=SessionOut)
 def submit_interview(
-    session_token: str, db: Session = Depends(get_db)
+    session_token: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
 ) -> SessionOut:
     session = _resolve_session(session_token, db)
 
@@ -297,4 +300,5 @@ def submit_interview(
     session.submitted_at = now
     db.commit()
     db.refresh(session)
+    background_tasks.add_task(run_evaluation_bg, str(session.id))
     return session

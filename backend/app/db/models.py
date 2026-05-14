@@ -181,8 +181,9 @@ class InterviewEvaluation(Base):
     __tablename__ = "interview_evaluations"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    invitation_id = Column(UUID(as_uuid=True), ForeignKey("interview_invitations.id"), nullable=False, unique=True)
-    evaluation_data = Column(JSONB, nullable=False)
+    invitation_id = Column(UUID(as_uuid=True), ForeignKey("interview_invitations.id"), nullable=True, unique=True)
+    session_id = Column(UUID(as_uuid=True), ForeignKey("interview_sessions.id"), nullable=True, unique=True)
+    evaluation_data = Column(JSONB, nullable=False, default=dict)
     overall_score = Column(Integer)
     recommendation = Column(Text)
     seniority_level = Column(Text)
@@ -201,6 +202,7 @@ class InterviewEvaluation(Base):
     )
 
     invitation = relationship("InterviewInvitation", back_populates="evaluation")
+    session = relationship("InterviewSession", back_populates="evaluation")
 
 
 class InterviewSession(Base):
@@ -226,6 +228,7 @@ class InterviewSession(Base):
     job = relationship("Job", back_populates="sessions")
     candidate = relationship("Candidate", back_populates="sessions")
     responses = relationship("InterviewResponse", back_populates="session")
+    evaluation = relationship("InterviewEvaluation", back_populates="session", uselist=False)
 
 
 class InvitationEvent(Base):

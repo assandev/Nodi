@@ -162,7 +162,8 @@ class ResponseOut(BaseModel):
 
 class EvaluationOut(BaseModel):
     id: UUID
-    invitation_id: UUID
+    invitation_id: Optional[UUID] = None
+    session_id: Optional[UUID] = None
     evaluation_data: Any
     overall_score: Optional[int]
     recommendation: Optional[str]
@@ -273,6 +274,14 @@ class SessionDetail(BaseModel):
     created_at: datetime
     candidate: CandidateOut
     responses: list[ResponseWithQuestion]
+
+
+class SessionEvaluationOut(BaseModel):
+    evaluation: Optional[EvaluationOut]
+    session: SessionOut
+    candidate: CandidateOut
+    responses: list[ResponseWithQuestion]
+    job: dict
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import { getToken } from "./auth";
+import { getToken, removeToken } from "./auth";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -8,7 +8,12 @@ async function apiFetch(path: string, options: RequestInit = {}): Promise<Respon
     ...(options.headers as Record<string, string>),
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
-  return fetch(`${BASE_URL}${path}`, { ...options, headers });
+  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  if (res.status === 401) {
+    removeToken();
+    if (typeof window !== "undefined") window.location.href = "/login";
+  }
+  return res;
 }
 
 export async function login(
@@ -424,4 +429,57 @@ export async function getJobInterview(jobId: string, sessionId: string): Promise
   if (res.status === 404) throw Object.assign(new Error("Not found"), { status: 404 });
   if (!res.ok) throw new Error("Failed to load interview");
   return res.json();
+}
+
+export interface EvaluationCriteria {
+  name: string;
+  score: number;
+  reasoning: string;
+  evidence: string[];
+}
+
+export interface EvaluationData {
+  summary: string;
+  overall_score: number;
+  seniority_level: string;
+  recommendation: "advance" | "hold" | "reject";
+  confidence_level: "high" | "medium" | "low";
+  strengths: string[];
+  gaps: string[];
+  risks: string[];
+  criteria: EvaluationCriteria[];
+}
+
+export interface EvaluationOut {
+  id: string;
+  session_id: string | null;
+  invitation_id: string | null;
+  evaluation_data: EvaluationData;
+  overall_score: number | null;
+  recommendation: string | null;
+  seniority_level: string | null;
+  model_version: string | null;
+  evaluation_status: "pending" | "processing" | "completed" | "failed";
+  evaluated_at: string | null;
+  created_at: string;
+}
+
+export interface SessionEvaluationOut {
+  evaluation: EvaluationOut | null;
+  session: { id: string; status: string; started_at: string | null; submitted_at: string | null; created_at: string };
+  candidate: CandidateOut;
+  responses: ResponseWithQuestion[];
+  job: { role: string; company: string };
+}
+
+export async function getSessionReport(jobId: string, sessionId: string): Promise<SessionEvaluationOut> {
+  const res = await apiFetch(`/jobs/${jobId}/interviews/${sessionId}/report`);
+  if (res.status === 404) throw Object.assign(new Error("Not found"), { status: 404 });
+  if (!res.ok) throw new Error("Failed to load report");
+  return res.json();
+}
+
+export async function triggerEvaluation(jobId: string, sessionId: string): Promise<void> {
+  const res = await apiFetch(`/jobs/${jobId}/interviews/${sessionId}/evaluate`, { method: "POST" });
+  if (!res.ok) throw new Error(await res.text());
 }
